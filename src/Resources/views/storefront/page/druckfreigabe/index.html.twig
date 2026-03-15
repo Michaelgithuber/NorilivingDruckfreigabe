@@ -25,7 +25,7 @@
 .df-plates        { flex: 1; min-width: 0; }
 .df-plates-row    { display: flex; align-items: flex-start; gap: 0; }
 .df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-right: 0; }
-.df-plate-img-wrap { width: 100%; }
+.df-plate-img-wrap { width: 100%; overflow: hidden; }
 .df-plate-img     { width: 100%; height: auto; display: block; }
 .df-plate-dim     { font-size: 11px; margin-top: 3px; }
 .df-plate-dim .dim-b { color: #333; }
@@ -231,27 +231,53 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    /* ── Formular Logik ── */
     var select  = document.getElementById('df-select');
     var comment = document.getElementById('df-comment');
     var btn     = document.getElementById('df-btn');
 
-    if (!select) return;
+    if (select) {
+        select.addEventListener('change', function () {
+            if (this.value === 'ja') {
+                comment.style.display = 'none';
+                btn.textContent = 'DRUCKFREIGABE ERTEILEN';
+                btn.className   = 'df-btn';
+            } else if (this.value === 'nein') {
+                comment.style.display = 'block';
+                btn.textContent = 'KEINE DRUCKFREIGABE ERTEILEN';
+                btn.className   = 'df-btn btn-no';
+            } else {
+                comment.style.display = 'none';
+                btn.textContent = 'KEINE AUSWAHL';
+                btn.className   = 'df-btn';
+            }
+        });
+    }
 
-    select.addEventListener('change', function () {
-        if (this.value === 'ja') {
-            comment.style.display = 'none';
-            btn.textContent = 'DRUCKFREIGABE ERTEILEN';
-            btn.className   = 'df-btn';
-        } else if (this.value === 'nein') {
-            comment.style.display = 'block';
-            btn.textContent = 'KEINE DRUCKFREIGABE ERTEILEN';
-            btn.className   = 'df-btn btn-no';
-        } else {
-            comment.style.display = 'none';
-            btn.textContent = 'KEINE AUSWAHL';
-            btn.className   = 'df-btn';
+    /* ── Bildhöhen angleichen (wie WordPress) ── */
+    var imgs = Array.from(document.querySelectorAll('.df-plate-img'));
+    if (!imgs.length) return;
+
+    var loaded = 0;
+    function tryEqualize() {
+        loaded++;
+        if (loaded < imgs.length) return;
+        var heights = imgs.map(function(img) { return img.offsetHeight; }).filter(function(h) { return h > 0; });
+        if (!heights.length) return;
+        var minH = Math.min.apply(null, heights);
+        imgs.forEach(function(img) {
+            img.parentElement.style.height = minH + 'px';
+        });
+    }
+    imgs.forEach(function(img) {
+        if (img.complete && img.naturalHeight) { setTimeout(tryEqualize, 0); }
+        else {
+            img.addEventListener('load',  tryEqualize);
+            img.addEventListener('error', tryEqualize);
         }
     });
+
 });
 </script>
 
