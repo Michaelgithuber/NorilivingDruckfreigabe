@@ -12,9 +12,10 @@
 .df-order-box table td:first-child { color: #333; padding-right: 24px; white-space: nowrap; }
 .df-order-box table td:last-child  { font-weight: 600; }
 
-/* ── Pro Position ────────────────────────────────── */
-.df-position      { display: flex; align-items: flex-start; gap: 16px; padding-bottom: 32px; margin-bottom: 32px; border-bottom: 2px solid #ccc; }
-.df-pos-info      { width: 160px; min-width: 160px; font-size: 12px; line-height: 1.6; }
+/* ── Positionen Grid (2 pro Zeile, auto-wrap) ────── */
+.df-positions-grid { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-bottom: 32px; }
+.df-position      { flex: 0 0 calc(50% - 16px); display: flex; align-items: flex-start; gap: 12px; padding-bottom: 24px; border-bottom: 1px solid #ddd; }
+.df-pos-info      { width: 140px; min-width: 140px; font-size: 12px; line-height: 1.6; }
 .df-pos-info .lbl { color: #555; }
 .df-pos-info .val { font-weight: 600; color: #c0392b; }
 .df-pos-info .val-black { font-weight: 600; color: #222; }
@@ -23,7 +24,7 @@
 .df-plates        { flex: 1; min-width: 0; }
 .df-plates-row    { display: flex; align-items: flex-start; gap: 0; }
 .df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-right: 0; }
-.df-plate-img-wrap { width: 100%; max-height: 400px; overflow: hidden; }
+.df-plate-img-wrap { width: 100%; }
 .df-plate-img     { width: 100%; height: auto; display: block; }
 .df-plate-dim     { font-size: 11px; margin-top: 3px; }
 .df-plate-dim .dim-b { color: #333; }
@@ -99,6 +100,7 @@
     </div>
 
     {# Positionen #}
+    <div class="df-positions-grid">
     {% for position in positions %}
     <div class="df-position">
 
@@ -146,6 +148,7 @@
         </div>
     </div>
     {% endfor %}
+    </div>{# Ende df-positions-grid #}
 
     {# Vorschau Zusammenfassung #}
     <div class="df-vorschau-wrap">
