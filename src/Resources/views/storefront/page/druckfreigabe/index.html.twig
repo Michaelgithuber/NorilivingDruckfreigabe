@@ -12,9 +12,9 @@
 .df-order-box table td:first-child { color: #333; padding-right: 24px; white-space: nowrap; }
 .df-order-box table td:last-child  { font-weight: 600; }
 
-/* ── Positionen Grid (2 pro Zeile, auto-wrap) ────── */
+/* ── Positionen Grid (auto-wrap, 2 pro Zeile wenn möglich) ────── */
 .df-positions-grid { display: flex; flex-wrap: wrap; gap: 24px 32px; margin-bottom: 32px; }
-.df-position      { flex: 0 0 calc(50% - 16px); display: flex; align-items: flex-start; gap: 12px; padding-bottom: 0; }
+.df-position      { flex: 1 1 420px; min-width: 0; display: flex; align-items: flex-start; gap: 12px; padding-bottom: 0; }
 .df-row-sep       { flex: 0 0 100%; height: 2px; background: #aaa; margin: 8px 0; }
 .df-pos-info      { width: 140px; min-width: 140px; font-size: 12px; line-height: 1.6; }
 .df-pos-info .lbl { color: #555; }
@@ -23,9 +23,9 @@
 
 /* ── Platten ─────────────────────────────────────── */
 .df-plates        { flex: 1; min-width: 0; }
-.df-plates-row    { display: flex; align-items: flex-start; gap: 0; }
-.df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-right: 0; }
-.df-plate-img-wrap { width: 100%; overflow: hidden; }
+.df-plates-row    { display: flex; align-items: flex-start; gap: 4px; }
+.df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.df-plate-img-wrap { width: 100%; }
 .df-plate-img     { width: 100%; height: auto; display: block; }
 .df-plate-dim     { font-size: 11px; margin-top: 3px; }
 .df-plate-dim .dim-b { color: #333; }
@@ -255,28 +255,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    /* ── Bildhöhen angleichen (wie WordPress) ── */
-    var imgs = Array.from(document.querySelectorAll('.df-plate-img'));
-    if (!imgs.length) return;
-
-    var loaded = 0;
-    function tryEqualize() {
-        loaded++;
-        if (loaded < imgs.length) return;
-        var heights = imgs.map(function(img) { return img.offsetHeight; }).filter(function(h) { return h > 0; });
-        if (!heights.length) return;
-        var minH = Math.min.apply(null, heights);
-        imgs.forEach(function(img) {
-            img.parentElement.style.height = minH + 'px';
-        });
-    }
-    imgs.forEach(function(img) {
-        if (img.complete && img.naturalHeight) { setTimeout(tryEqualize, 0); }
-        else {
-            img.addEventListener('load',  tryEqualize);
-            img.addEventListener('error', tryEqualize);
-        }
-    });
 
 });
 </script>
