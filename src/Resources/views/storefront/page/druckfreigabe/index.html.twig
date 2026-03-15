@@ -22,8 +22,7 @@
 /* ── Platten ─────────────────────────────────────── */
 .df-plates        { flex: 1; min-width: 0; }
 .df-plates-row    { display: flex; align-items: flex-end; gap: 0; }
-.df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-right: 4px; }
-.df-plate-col:last-child { padding-right: 0; }
+.df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-right: 0; }
 .df-plate-img     { width: 100%; height: auto; display: block; max-height: 380px; object-fit: contain; }
 .df-plate-dim     { font-size: 11px; margin-top: 3px; }
 .df-plate-dim .dim-b { color: #333; }
@@ -39,7 +38,8 @@
     align-items: stretch;
     height: 200px;
 }
-.df-vorschau-item  { flex: 1; min-width: 0; overflow: hidden; }
+.df-vorschau-item  { flex: 1; min-width: 0; overflow: hidden; margin-right: 3px; }
+.df-vorschau-item:last-child { margin-right: 0; }
 .df-vorschau-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ── Hinweistext ─────────────────────────────────── */
