@@ -1,0 +1,15 @@
+{% sw_extends '@Storefront/storefront/page/account/order/index.html.twig' %}
+
+{% block page_account_orders_summary_details %}
+    {{ parent() }}
+
+    {% set druckfreigabe = page.extensions.druckfreigabe %}
+    {% if druckfreigabe and druckfreigabe.hasOrder(order.orderNumber) %}
+        <a href="{{ path('frontend.druckfreigabe.page', { orderNumber: order.orderNumber }) }}"
+           class="btn btn-sm mt-2"
+           style="background-color: #1a7f8e; color: #fff; border: none;"
+           target="_blank">
+            🖨 Druckfreigabe anzeigen
+        </a>
+    {% endif %}
+{% endblock %}
