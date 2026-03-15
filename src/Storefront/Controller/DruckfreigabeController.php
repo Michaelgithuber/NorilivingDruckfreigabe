@@ -161,15 +161,18 @@ class DruckfreigabeController extends StorefrontController
                     continue;
                 }
 
+                $totalBreite = array_sum(array_map(fn($p) => (int) $p['breite'], $plates));
+
                 $positions[] = [
-                    'number'     => $posNumber,
-                    'label'      => $orderNumber . '-' . $posNumber,
-                    'menge'      => (string) $item->Gesamtmenge,
-                    'material'   => (string) $item->material,
-                    'farbigkeit' => (string) $item->farbigkeit,
-                    'schneiden'  => (string) $item->schneiden,
-                    'veredelung' => (string) $item->veredelung,
-                    'plates'     => $plates,
+                    'number'       => $posNumber,
+                    'label'        => $orderNumber . '-' . $posNumber,
+                    'menge'        => (string) $item->Gesamtmenge,
+                    'material'     => (string) $item->material,
+                    'farbigkeit'   => (string) $item->farbigkeit,
+                    'schneiden'    => (string) $item->schneiden,
+                    'veredelung'   => (string) $item->veredelung,
+                    'total_breite' => $totalBreite ?: 1000,
+                    'plates'       => $plates,
                 ];
             }
         }
