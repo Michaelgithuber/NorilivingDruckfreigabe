@@ -7,8 +7,7 @@
     {% if druckfreigabe and druckfreigabe.hasOrder(order.orderNumber) %}
         <div class="mt-2">
             <a href="{{ path('frontend.druckfreigabe.page', { orderNumber: order.orderNumber }) }}"
-               class="btn btn-sm"
-               style="background-color: #1a7f8e; color: #fff; border: none; white-space: nowrap;"
+               class="btn btn-primary btn-sm"
                target="_blank">
                 Druckfreigabe
             </a>
