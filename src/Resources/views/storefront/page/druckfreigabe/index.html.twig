@@ -1,0 +1,214 @@
+{% sw_extends '@Storefront/storefront/base.html.twig' %}
+
+{% block base_main %}
+
+<div class="container mt-5">
+
+<h1>Druckfreigabe {{ orderNumber }}</h1>
+
+<div class="row mt-4">
+
+{% for position in positions %}
+
+<div class="col-lg-3 col-md-6 mb-4">
+
+<div class="card p-3 h-100">
+
+<h5>Position {{ position.number }}</h5>
+
+<img
+src="{{ position.preview }}"
+class="img-fluid mb-3"
+style="height:320px; object-fit:cover;"
+/>
+
+<a
+href="{{ position.download }}"
+target="_blank"
+class="btn btn-primary w-100"
+>
+Platte öffnen
+</a>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+<div class="second-display-container">
+
+<div class="second-display-title">
+Vorschau Zusammenfassung
+</div>
+
+<div class="second-display">
+
+{% for position in positions %}
+<div class="image-wrapper">
+<div class="image">
+<img src="{{ position.preview }}" class="custom-image"/>
+</div>
+</div>
+{% endfor %}
+
+</div>
+
+<div class="notice-text">
+
+Bitte die Originaldatei (Link Platte 1 usw.) in 1:1 unbedingt prüfen!
+<br><br>
+
+WICHTIG: Bei Nachbestellungen / Ergänzungsbestellungen kann es zu Farbabweichungen kommen!
+<br>
+Informieren Sie uns bitte vor der Druckfreigabe, falls es sich bei diesem Auftrag um eine Nach- bzw. Ergänzungsbestellung handelt.
+<br><br>
+
+<img src="/image/banner-erklaerung.jpg">
+
+<br><br>
+
+Wie geht es nun weiter?
+<br>
+Sie geben die Druckdatei frei (wählen Sie "Ja" und klicken Sie auf den Button "DRUCKFREIGABE ERTEILEN")
+<br>
+Ihr Auftrag geht in die Produktion
+<br>
+Der Versand wird in ca. 1 Woche erfolgen
+<br><br>
+
+oder
+<br><br>
+
+Sie teilen uns Ihre Änderungswünsche mit (wählen Sie "Nein", notieren Sie Ihre Änderungswünsche und klicken Sie auf den Button "KEINE DRUCKFREIGABE ERTEILEN")
+<br>
+Ihr Auftrag geht in die Grafikabteilung
+<br>
+Sie erhalten eine neue Druckvorschau per Mail
+
+</div>
+
+<textarea
+placeholder="Bitte hier Änderungswünsche eintragen"
+id="approvalComment"
+name="comments"
+rows="4"
+cols="50"
+></textarea>
+
+<select id="printApprovalSelect">
+<option value="kA">bitte wählen!</option>
+<option value="ja">Ja</option>
+<option value="nein">Nein</option>
+</select>
+
+<button id="approvalButton">
+Druckfreigabe erteilen
+</button>
+
+</div>
+
+<div class="footer-druckfreigabe">
+<a href="/impressum">Impressum</a>
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<a href="/kontaktformular">Kontakt</a>
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+
+var imageDivs = document.querySelectorAll('.image');
+var maxHeight = 0;
+
+imageDivs.forEach(function(div) {
+
+var img = div.querySelector('img');
+
+if (img) {
+
+img.addEventListener('load', function() {
+
+if (img.naturalHeight > maxHeight) {
+maxHeight = img.naturalHeight;
+updateDivHeights(maxHeight);
+}
+
+});
+
+}
+
+});
+
+function updateDivHeights(height) {
+
+imageDivs.forEach(function(div) {
+div.style.height = height + 'px';
+});
+
+}
+
+});
+
+</script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+
+var select = document.getElementById('printApprovalSelect');
+var textarea = document.getElementById('approvalComment');
+
+function toggleCommentField() {
+
+if (select.value === 'nein') {
+textarea.style.display = 'block';
+}
+else {
+textarea.style.display = 'none';
+}
+
+}
+
+toggleCommentField();
+
+select.addEventListener('change', toggleCommentField);
+
+});
+
+</script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+
+var select = document.getElementById('printApprovalSelect');
+var button = document.getElementById('approvalButton');
+
+function updateButtonLabel() {
+
+if (select.value === 'ja') {
+button.textContent = 'Druckfreigabe erteilen';
+}
+else if (select.value === 'nein') {
+button.textContent = 'Keine Druckfreigabe erteilen';
+}
+else {
+button.textContent = 'Keine Auswahl';
+}
+
+}
+
+updateButtonLabel();
+
+select.addEventListener('change', updateButtonLabel);
+
+});
+
+</script>
+
+{% endblock %}

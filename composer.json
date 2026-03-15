@@ -1,0 +1,27 @@
+{
+    "name": "noriliving-druckfreigabe/noriliving-druckfreigabe",
+    "description": "noriliving-druckfreigabe/noriliving-druckfreigabe",
+    "type": "shopware-platform-plugin",
+    "version": "1.0.0",
+    "license": "MIT",
+    "require": {
+        "shopware/core": "~6.7.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "NorilivingDruckfreigabe\\NorilivingDruckfreigabe",
+        "label": {
+            "de-DE": "Skeleton plugin",
+            "en-GB": "Skeleton plugin"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "NorilivingDruckfreigabe\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NorilivingDruckfreigabe\\Tests\\": "tests/"
+        }
+    }
+}
