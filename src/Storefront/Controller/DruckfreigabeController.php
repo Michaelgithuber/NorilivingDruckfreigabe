@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class DruckfreigabeController extends StorefrontController
 {
-
     #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.page',
@@ -18,44 +17,145 @@ class DruckfreigabeController extends StorefrontController
     )]
     public function index(string $orderNumber, Request $request): Response
     {
+        $data = $this->loadOrderData($orderNumber);
 
-        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/som/druckfreigabe-' . $orderNumber . '.xml';
-
-        if (!file_exists($xmlPath)) {
-            return new Response('XML nicht gefunden: ' . $xmlPath);
-        }
-
-        $xml = simplexml_load_file($xmlPath);
-
-        $positions = [];
-
-        if (isset($xml->positions->position)) {
-
-            foreach ($xml->positions->position as $position) {
-
-                $positionNumber = (string)$position->number;
-
-                $positions[] = [
-                    'number' => $positionNumber,
-
-                    'preview' =>
-                        'https://druckdaten.heinikel.com/extern/druckpng_neu/' .
-                        $orderNumber . '-' . $positionNumber . '-platte-1',
-
-                    'download' =>
-                        'https://druckdaten.heinikel.com/extern/' .
-                        $orderNumber . '-' . $positionNumber . '-platte-1'
-                ];
-            }
+        if ($data === null) {
+            return new Response('Bestellung nicht gefunden: ' . $orderNumber, 404);
         }
 
         return $this->renderStorefront(
             '@Storefront/storefront/page/druckfreigabe/index.html.twig',
-            [
+            array_merge($data, [
                 'orderNumber' => $orderNumber,
-                'positions' => $positions
-            ]
+                'success'     => false,
+                'error'       => null,
+            ])
         );
     }
 
+    #[Route(
+        path: '/druckfreigabe/{orderNumber}',
+        name: 'frontend.druckfreigabe.submit',
+        defaults: ['_csrf_protection' => false],
+        methods: ['POST']
+    )]
+    public function submit(string $orderNumber, Request $request): Response
+    {
+        $approval = $request->request->get('approval', '');
+        $comment  = trim($request->request->get('comment', ''));
+
+        $data = $this->loadOrderData($orderNumber);
+
+        if ($data === null) {
+            return new Response('Bestellung nicht gefunden: ' . $orderNumber, 404);
+        }
+
+        if (!in_array($approval, ['ja', 'nein'], true)) {
+            return $this->renderStorefront(
+                '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+                array_merge($data, [
+                    'orderNumber' => $orderNumber,
+                    'success'     => false,
+                    'error'       => 'Bitte wählen Sie Ja oder Nein.',
+                ])
+            );
+        }
+
+        $druckfreigabeValue = $approval === 'ja' ? 'erteilt' : 'abgelehnt';
+        $timestamp          = (new \DateTime())->format('Y-m-d\TH:i:s');
+
+        // XML aufbauen
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><order/>');
+        $xml->addChild('number', $orderNumber);
+
+        $attributes = $xml->addChild('attributes');
+
+        $tsAttr = $attributes->addChild('attribute');
+        $tsAttr->addChild('name', 'd_zeitstempel');
+        $tsAttr->addChild('value', $timestamp);
+
+        $komAttr = $attributes->addChild('attribute');
+        $komAttr->addChild('name', 'd_kommentar');
+        $komAttr->addChild('value', htmlspecialchars($comment, ENT_XML1, 'UTF-8'));
+
+        $positionsNode = $xml->addChild('positions');
+
+        foreach ($data['positions'] as $position) {
+            $posNode = $positionsNode->addChild('position');
+            $posNode->addChild('number', $position['number']);
+
+            $posAttrs      = $posNode->addChild('attributes');
+            $freigabeAttr  = $posAttrs->addChild('attribute');
+            $freigabeAttr->addChild('name', 'd_druckfreigabe');
+            $freigabeAttr->addChild('value', $druckfreigabeValue);
+        }
+
+        // Formatiert speichern
+        $outputDir = $_SERVER['DOCUMENT_ROOT'] . '/media/som-druckfreigabe';
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput       = true;
+        $dom->loadXML($xml->asXML());
+        $dom->save($outputDir . '/druckfreigabe-' . $orderNumber . '.xml');
+
+        return $this->renderStorefront(
+            '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+            array_merge($data, [
+                'orderNumber'   => $orderNumber,
+                'success'       => true,
+                'approvalValue' => $druckfreigabeValue,
+                'error'         => null,
+            ])
+        );
+    }
+
+    private function loadOrderData(string $orderNumber): ?array
+    {
+        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/som/' . $orderNumber . '_XML.xml';
+
+        if (!file_exists($xmlPath)) {
+            return null;
+        }
+
+        $xml       = simplexml_load_file($xmlPath);
+        $positions = [];
+
+        if (isset($xml->items->item)) {
+            foreach ($xml->items->item as $item) {
+                $posNumber = (string) $item['pos'];
+
+                $plates = [];
+                for ($i = 1; $i <= 5; $i++) {
+                    $key   = 'druckdatenplatte' . $i;
+                    $value = trim((string) $item->$key);
+                    if ($value === '') {
+                        continue;
+                    }
+                    $plates[] = [
+                        'number'   => $i,
+                        'name'     => $value,
+                        'preview'  => 'https://druckdaten.heinikel.com/extern/druckpng_neu/' . $value,
+                        'download' => 'https://druckdaten.heinikel.com/extern/' . $value,
+                    ];
+                }
+
+                if (empty($plates)) {
+                    continue;
+                }
+
+                $positions[] = [
+                    'number'       => $posNumber,
+                    'material'     => (string) $item->material,
+                    'plattenanzahl'=> (string) $item->plattenanzahl,
+                    'plates'       => $plates,
+                ];
+            }
+        }
+
+        return ['positions' => $positions];
+    }
 }
