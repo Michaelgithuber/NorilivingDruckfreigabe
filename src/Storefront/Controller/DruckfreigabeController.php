@@ -13,6 +13,7 @@ class DruckfreigabeController extends StorefrontController
     #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.page',
+        defaults: ['_loginRequired' => true],
         methods: ['GET']
     )]
     public function index(string $orderNumber, Request $request): Response
@@ -36,7 +37,7 @@ class DruckfreigabeController extends StorefrontController
     #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.submit',
-        defaults: ['_csrf_protection' => false],
+        defaults: ['_loginRequired' => true, '_csrf_protection' => false],
         methods: ['POST']
     )]
     public function submit(string $orderNumber, Request $request): Response
