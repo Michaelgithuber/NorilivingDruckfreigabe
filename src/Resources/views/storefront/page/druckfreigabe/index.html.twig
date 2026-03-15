@@ -21,9 +21,10 @@
 
 /* ── Platten ─────────────────────────────────────── */
 .df-plates        { flex: 1; min-width: 0; }
-.df-plates-row    { display: flex; align-items: flex-end; gap: 0; }
+.df-plates-row    { display: flex; align-items: flex-start; gap: 0; }
 .df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-right: 0; }
-.df-plate-img     { width: 100%; height: auto; display: block; max-height: 380px; object-fit: contain; }
+.df-plate-img-wrap { overflow: hidden; height: 320px; width: 100%; }
+.df-plate-img     { width: 100%; height: 100%; object-fit: cover; display: block; }
 .df-plate-dim     { font-size: 11px; margin-top: 3px; }
 .df-plate-dim .dim-b { color: #333; }
 .df-plate-dim .dim-h { color: #333; }
@@ -37,9 +38,10 @@
     display: flex;
     align-items: stretch;
     height: 200px;
+    gap: 5px;
 }
-.df-vorschau-item  { flex: 1; min-width: 0; overflow: hidden; margin-right: 3px; }
-.df-vorschau-item:last-child { margin-right: 0; }
+.df-vorschau-pos   { display: flex; align-items: stretch; flex: 1; min-width: 0; }
+.df-vorschau-item  { flex: 1; min-width: 0; overflow: hidden; }
 .df-vorschau-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ── Hinweistext ─────────────────────────────────── */
@@ -126,11 +128,13 @@
                     <a href="{{ plate.download }}" target="_blank" class="btn btn-sm btn-primary mb-1">
                         Platte {{ plate.number }}
                     </a>
-                    <img
-                        src="{{ plate.preview }}"
-                        class="df-plate-img"
-                        alt="Pos. {{ position.number }} Platte {{ plate.number }}"
-                    />
+                    <div class="df-plate-img-wrap">
+                        <img
+                            src="{{ plate.preview }}"
+                            class="df-plate-img"
+                            alt="Pos. {{ position.number }} Platte {{ plate.number }}"
+                        />
+                    </div>
                     <div class="df-plate-dim">
                         <div class="dim-b">Breite: {{ plate.breite }}</div>
                         <div class="dim-h">Höhe: {{ plate.hoehe }}</div>
@@ -148,11 +152,13 @@
         <h3>Vorschau Zusammenfassung</h3>
         <div class="df-vorschau-box">
             {% for position in positions %}
+            <div class="df-vorschau-pos">
                 {% for plate in position.plates %}
                 <div class="df-vorschau-item" style="flex: {{ plate.breite|default('1') }};">
                     <img src="{{ plate.preview }}" alt="Pos. {{ position.number }} Pl. {{ plate.number }}" />
                 </div>
                 {% endfor %}
+            </div>
             {% endfor %}
         </div>
     </div>
