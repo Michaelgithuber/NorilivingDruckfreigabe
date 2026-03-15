@@ -13,7 +13,7 @@
 .df-order-box table td:last-child  { font-weight: 600; }
 
 /* ── Pro Position ────────────────────────────────── */
-.df-position      { display: flex; align-items: flex-start; margin-bottom: 40px; gap: 16px; }
+.df-position      { display: flex; align-items: flex-start; gap: 16px; padding-bottom: 32px; margin-bottom: 32px; border-bottom: 3px solid #f4f4f4; }
 .df-pos-info      { width: 160px; min-width: 160px; font-size: 12px; line-height: 1.6; }
 .df-pos-info .lbl { color: #555; }
 .df-pos-info .val { font-weight: 600; color: #c0392b; }
@@ -24,17 +24,10 @@
 .df-plates-row    { display: flex; align-items: flex-end; gap: 0; }
 .df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-right: 4px; }
 .df-plate-col:last-child { padding-right: 0; }
-.btn-platte       {
-    display: inline-block; background: #1a6fc4; color: #fff;
-    font-size: 12px; font-weight: 600; padding: 4px 14px;
-    border-radius: 4px; text-decoration: none; margin-bottom: 4px;
-    white-space: nowrap;
-}
-.btn-platte:hover { background: #155da0; color: #fff; text-decoration: none; }
-.df-plate-img     { width: 100%; height: auto; display: block; }
+.df-plate-img     { width: 100%; height: auto; display: block; max-height: 380px; object-fit: contain; }
 .df-plate-dim     { font-size: 11px; margin-top: 3px; }
 .df-plate-dim .dim-b { color: #333; }
-.df-plate-dim .dim-h { color: #c0392b; }
+.df-plate-dim .dim-h { color: #333; }
 
 /* ── Vorschau Zusammenfassung ────────────────────── */
 .df-vorschau-wrap  { margin-bottom: 24px; }
@@ -50,8 +43,9 @@
 .df-vorschau-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ── Hinweistext ─────────────────────────────────── */
-.df-notice        { font-style: italic; font-size: 13px; color: #c0392b; margin-bottom: 8px; }
-.df-howto         { font-size: 13px; color: #c0392b; margin: 16px 0 24px; line-height: 1.8; }
+.df-notice        { font-style: italic; font-size: 13px; color: #333; margin-bottom: 8px; }
+.df-howto         { font-size: 13px; color: #333; margin: 16px 0 24px; line-height: 1.8; }
+.df-banner        { display: block; max-width: 100%; margin: 16px 0; }
 
 /* ── Formular ────────────────────────────────────── */
 .df-form-row      { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
@@ -129,7 +123,7 @@
             <div class="df-plates-row">
                 {% for plate in position.plates %}
                 <div class="df-plate-col" style="flex: {{ plate.breite|default('1') }};">
-                    <a href="{{ plate.download }}" target="_blank" class="btn-platte">
+                    <a href="{{ plate.download }}" target="_blank" class="btn btn-sm btn-primary mb-1">
                         Platte {{ plate.number }}
                     </a>
                     <img
@@ -172,8 +166,8 @@
         Informieren Sie uns bitte vor der Druckfreigabe, falls es sich bei diesem Auftrag um eine Nach- bzw. Ergänzungsbestellung handelt.
     </div>
 
-    {# Erklärungsbanner – falls Datei vorhanden #}
-    {# <img src="/image/banner-erklaerung.jpg" class="img-fluid my-3" alt=""> #}
+    {# Erklärungsbanner #}
+    <img src="/media/norilivingdruckfreigabe/banner-erklaerung.jpg" class="df-banner" alt="Erklärung Druckfreigabe">
 
     {# Wie geht es weiter #}
     <div class="df-howto">
