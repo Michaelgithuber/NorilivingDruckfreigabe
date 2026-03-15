@@ -103,7 +103,7 @@
     {# Positionen #}
     <div class="df-positions-grid">
     {% for position in positions %}
-    <div class="df-position" style="width: {{ [((position.total_breite * 0.17 + 152)|round), 1060]|min }}px;">
+    <div class="df-position" style="width: {{ (position.total_breite * 0.17 + 152)|round }}px;">
 
         {# Info links #}
         <div class="df-pos-info">
