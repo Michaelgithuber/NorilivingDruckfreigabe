@@ -64,7 +64,6 @@ class DruckfreigabeController extends StorefrontController
         $druckfreigabeValue = $approval === 'ja' ? 'erteilt' : 'abgelehnt';
         $timestamp          = (new \DateTime())->format('Y-m-d\TH:i:s');
 
-        // XML aufbauen
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><order/>');
         $xml->addChild('number', $orderNumber);
 
@@ -84,13 +83,12 @@ class DruckfreigabeController extends StorefrontController
             $posNode = $positionsNode->addChild('position');
             $posNode->addChild('number', $position['number']);
 
-            $posAttrs      = $posNode->addChild('attributes');
-            $freigabeAttr  = $posAttrs->addChild('attribute');
+            $posAttrs     = $posNode->addChild('attributes');
+            $freigabeAttr = $posAttrs->addChild('attribute');
             $freigabeAttr->addChild('name', 'd_druckfreigabe');
             $freigabeAttr->addChild('value', $druckfreigabeValue);
         }
 
-        // Formatiert speichern
         $outputDir = $_SERVER['DOCUMENT_ROOT'] . '/media/som-druckfreigabe';
         if (!is_dir($outputDir)) {
             mkdir($outputDir, 0755, true);
@@ -121,7 +119,20 @@ class DruckfreigabeController extends StorefrontController
             return null;
         }
 
-        $xml       = simplexml_load_file($xmlPath);
+        $xml      = simplexml_load_file($xmlPath);
+        $shipping = $xml->shipping_to;
+
+        $orderInfo = [
+            'number'  => $orderNumber,
+            'date'    => (string) $xml->{'r-date'},
+            'name'    => trim((string) $shipping->order_firstname . ' ' . (string) $shipping->order_lastname),
+            'address' => trim(
+                (string) $shipping->order_shipping_street . ', ' .
+                (string) $shipping->order_shipping_zipcode . ' ' .
+                (string) $shipping->order_shipping_city
+            ),
+        ];
+
         $positions = [];
 
         if (isset($xml->items->item)) {
@@ -130,14 +141,17 @@ class DruckfreigabeController extends StorefrontController
 
                 $plates = [];
                 for ($i = 1; $i <= 5; $i++) {
-                    $key   = 'druckdatenplatte' . $i;
-                    $value = trim((string) $item->$key);
+                    $plateKey = 'druckdatenplatte' . $i;
+                    $value    = trim((string) $item->$plateKey);
                     if ($value === '') {
                         continue;
                     }
+                    $breiteKey = 'breite_platte' . $i;
                     $plates[] = [
                         'number'   => $i,
                         'name'     => $value,
+                        'breite'   => trim((string) $item->$breiteKey),
+                        'hoehe'    => trim((string) $item->gesamthoehe),
                         'preview'  => 'https://druckdaten.heinikel.com/extern/druckpng_neu/' . $value,
                         'download' => 'https://druckdaten.heinikel.com/extern/' . $value,
                     ];
@@ -148,14 +162,21 @@ class DruckfreigabeController extends StorefrontController
                 }
 
                 $positions[] = [
-                    'number'       => $posNumber,
-                    'material'     => (string) $item->material,
-                    'plattenanzahl'=> (string) $item->plattenanzahl,
-                    'plates'       => $plates,
+                    'number'     => $posNumber,
+                    'label'      => $orderNumber . '-' . $posNumber,
+                    'menge'      => (string) $item->Gesamtmenge,
+                    'material'   => (string) $item->material,
+                    'farbigkeit' => (string) $item->farbigkeit,
+                    'schneiden'  => (string) $item->schneiden,
+                    'veredelung' => (string) $item->veredelung,
+                    'plates'     => $plates,
                 ];
             }
         }
 
-        return ['positions' => $positions];
+        return [
+            'orderInfo' => $orderInfo,
+            'positions' => $positions,
+        ];
     }
 }

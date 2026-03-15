@@ -2,12 +2,83 @@
 
 {% block base_main %}
 
-<div class="container mt-5 mb-5">
+<style>
+/* ── Layout ─────────────────────────────────────── */
+.df-page          { max-width: 1100px; margin: 40px auto; padding: 0 20px 60px; }
+.df-title         { text-align: center; font-size: 28px; font-weight: bold; margin-bottom: 24px; }
 
-    <h1 class="mb-4">Druckfreigabe {{ orderNumber }}</h1>
+/* ── Bestellinfo Box ─────────────────────────────── */
+.df-order-box     { border: 1px solid #ddd; padding: 16px 20px; margin-bottom: 32px; font-size: 14px; }
+.df-order-box table td:first-child { color: #333; padding-right: 24px; white-space: nowrap; }
+.df-order-box table td:last-child  { font-weight: 600; }
 
+/* ── Pro Position ────────────────────────────────── */
+.df-position      { display: flex; align-items: flex-start; margin-bottom: 40px; gap: 16px; }
+.df-pos-info      { width: 160px; min-width: 160px; font-size: 12px; line-height: 1.6; }
+.df-pos-info .lbl { color: #555; }
+.df-pos-info .val { font-weight: 600; color: #c0392b; }
+.df-pos-info .val-black { font-weight: 600; color: #222; }
+
+/* ── Platten ─────────────────────────────────────── */
+.df-plates        { flex: 1; min-width: 0; }
+.df-plates-row    { display: flex; align-items: flex-end; gap: 0; }
+.df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding-right: 4px; }
+.df-plate-col:last-child { padding-right: 0; }
+.btn-platte       {
+    display: inline-block; background: #1a6fc4; color: #fff;
+    font-size: 12px; font-weight: 600; padding: 4px 14px;
+    border-radius: 4px; text-decoration: none; margin-bottom: 4px;
+    white-space: nowrap;
+}
+.btn-platte:hover { background: #155da0; color: #fff; text-decoration: none; }
+.df-plate-img     { width: 100%; height: auto; display: block; }
+.df-plate-dim     { font-size: 11px; margin-top: 3px; }
+.df-plate-dim .dim-b { color: #333; }
+.df-plate-dim .dim-h { color: #c0392b; }
+
+/* ── Vorschau Zusammenfassung ────────────────────── */
+.df-vorschau-wrap  { margin-bottom: 24px; }
+.df-vorschau-wrap h3 { font-size: 18px; margin-bottom: 8px; }
+.df-vorschau-box   {
+    border: 1px solid #ccc;
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    height: 200px;
+}
+.df-vorschau-item  { flex: 1; min-width: 0; overflow: hidden; }
+.df-vorschau-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ── Hinweistext ─────────────────────────────────── */
+.df-notice        { font-style: italic; font-size: 13px; color: #c0392b; margin-bottom: 8px; }
+.df-howto         { font-size: 13px; color: #c0392b; margin: 16px 0 24px; line-height: 1.8; }
+
+/* ── Formular ────────────────────────────────────── */
+.df-form-row      { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.df-select        { font-size: 14px; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; }
+.df-btn           {
+    background: #27ae60; color: #fff; border: none;
+    font-size: 14px; font-weight: 700; padding: 8px 24px;
+    border-radius: 4px; cursor: pointer; letter-spacing: 0.5px;
+}
+.df-btn:hover     { background: #219150; }
+.df-btn.btn-no    { background: #e74c3c; }
+.df-btn.btn-no:hover { background: #c0392b; }
+.df-comment       { width: 100%; margin-top: 12px; }
+
+/* ── Footer ──────────────────────────────────────── */
+.df-footer        { text-align: center; font-size: 13px; margin-top: 40px; color: #666; }
+.df-footer a      { color: #666; text-decoration: none; }
+.df-footer a:hover{ text-decoration: underline; }
+</style>
+
+<div class="df-page">
+
+    <div class="df-title">Druckfreigabe</div>
+
+    {# Meldungen #}
     {% if success %}
-        <div class="alert alert-success">
+        <div class="alert alert-success mb-4">
             <strong>Vielen Dank!</strong> Ihre Druckfreigabe wurde erfolgreich übermittelt.
             {% if approvalValue == 'erteilt' %}
                 Ihr Auftrag geht in die Produktion. Der Versand erfolgt in ca. 1 Woche.
@@ -18,111 +89,134 @@
     {% endif %}
 
     {% if error %}
-        <div class="alert alert-danger">{{ error }}</div>
+        <div class="alert alert-danger mb-4">{{ error }}</div>
     {% endif %}
 
-    {# 1. Druckplatten Übersicht #}
-    <h3>Druckplatten Übersicht</h3>
-
-    <div class="row mt-3">
-        {% for position in positions %}
-            {% for plate in position.plates %}
-                <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="card p-3 h-100">
-                        <h6 class="text-muted mb-2">
-                            Position {{ position.number }} &mdash; Platte {{ plate.number }}
-                        </h6>
-                        <img
-                            src="{{ plate.preview }}"
-                            class="img-fluid mb-3"
-                            style="height:280px; object-fit:contain;"
-                            alt="Vorschau Pos. {{ position.number }} Platte {{ plate.number }}"
-                        />
-                        <a href="{{ plate.download }}" target="_blank" class="btn btn-outline-primary w-100">
-                            Platte öffnen
-                        </a>
-                    </div>
-                </div>
-            {% endfor %}
-        {% endfor %}
+    {# Bestellinfo #}
+    <div class="df-order-box">
+        <table>
+            <tr><td>Ihre Bestellung:</td><td>{{ orderInfo.number }}</td></tr>
+            <tr><td>Auftragsdatum:</td><td>{{ orderInfo.date }}</td></tr>
+            <tr><td>Empfänger:</td><td>{{ orderInfo.name }}</td></tr>
+            <tr><td>Lieferadresse:</td><td>{{ orderInfo.address }}</td></tr>
+        </table>
     </div>
 
-    {# 2. Vorschau Zusammenfassung #}
-    <div class="second-display-container mt-4">
-        <div class="second-display-title">Vorschau Zusammenfassung</div>
-        <div class="second-display">
+    {# Positionen #}
+    {% for position in positions %}
+    <div class="df-position">
+
+        {# Info links #}
+        <div class="df-pos-info">
+            <div class="lbl">Ihre Bestellung:</div>
+            <div class="val">{{ position.label }}</div>
+            <div class="lbl">Gesamtmenge:</div>
+            <div class="val-black">{{ position.menge }}</div>
+            <div class="lbl">Material:</div>
+            <div class="val-black">{{ position.material }}</div>
+            <div class="lbl">Farbigkeit:</div>
+            <div class="val">{{ position.farbigkeit }}</div>
+            <div class="lbl">Schneiden:</div>
+            <div class="val">{{ position.schneiden }}</div>
+            <div class="lbl">Veredelung:</div>
+            <div class="val">{{ position.veredelung }}</div>
+        </div>
+
+        {# Platten #}
+        <div class="df-plates">
+
+            {# Platte-Buttons + Bilder + Maße #}
+            <div class="df-plates-row">
+                {% for plate in position.plates %}
+                <div class="df-plate-col" style="flex: {{ plate.breite|default('1') }};">
+                    <a href="{{ plate.download }}" target="_blank" class="btn-platte">
+                        Platte {{ plate.number }}
+                    </a>
+                    <img
+                        src="{{ plate.preview }}"
+                        class="df-plate-img"
+                        alt="Pos. {{ position.number }} Platte {{ plate.number }}"
+                    />
+                    <div class="df-plate-dim">
+                        <div class="dim-b">Breite: {{ plate.breite }}</div>
+                        <div class="dim-h">Höhe: {{ plate.hoehe }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+
+    {# Vorschau Zusammenfassung #}
+    <div class="df-vorschau-wrap">
+        <h3>Vorschau Zusammenfassung</h3>
+        <div class="df-vorschau-box">
             {% for position in positions %}
                 {% for plate in position.plates %}
-                    <div class="image-wrapper">
-                        <div class="image">
-                            <img src="{{ plate.preview }}" class="custom-image" />
-                        </div>
-                        <div class="text-center small mt-1">
-                            Pos. {{ position.number }} / Pl. {{ plate.number }}
-                        </div>
-                    </div>
+                <div class="df-vorschau-item" style="flex: {{ plate.breite|default('1') }};">
+                    <img src="{{ plate.preview }}" alt="Pos. {{ position.number }} Pl. {{ plate.number }}" />
+                </div>
                 {% endfor %}
             {% endfor %}
         </div>
     </div>
 
-    {# 3. Hinweistext & Formular #}
-    {% if not success %}
-
-    <div class="notice-text mt-5">
-        Bitte die Originaldatei (Link „Platte öffnen") in 1:1 unbedingt prüfen!
-        <br><br>
-        <strong>WICHTIG:</strong> Bei Nachbestellungen / Ergänzungsbestellungen kann es zu Farbabweichungen kommen!
-        Informieren Sie uns bitte <strong>vor</strong> der Druckfreigabe, falls es sich um eine Nach- bzw. Ergänzungsbestellung handelt.
-        <br><br>
-        <strong>Wie geht es weiter?</strong><br>
-        Wählen Sie <strong>„Ja"</strong> → Auftrag geht in die Produktion (Versand in ca. 1 Woche).<br>
-        Wählen Sie <strong>„Nein"</strong> → Notieren Sie Ihre Änderungswünsche → Auftrag geht in die Grafikabteilung.
+    {# Hinweistexte #}
+    <div class="df-notice">
+        Bitte die Originaldatei (Link Platte 1 usw.) in 1:1 unbedingt prüfen!
+    </div>
+    <div class="df-notice">
+        WICHTIG: Bei Nachbestellungen / Ergänzungsbestellungen kann es zu Farbabweichungen kommen!<br>
+        Informieren Sie uns bitte vor der Druckfreigabe, falls es sich bei diesem Auftrag um eine Nach- bzw. Ergänzungsbestellung handelt.
     </div>
 
-    <form method="post" action="{{ path('frontend.druckfreigabe.submit', { orderNumber: orderNumber }) }}" class="mt-4">
+    {# Erklärungsbanner – falls Datei vorhanden #}
+    {{-- <img src="/image/banner-erklaerung.jpg" class="img-fluid my-3" alt=""> --}}
 
-        {# 4. Druckfreigabe Auswahl #}
-        <div class="mb-3">
-            <label class="form-label fw-bold fs-5">Druckfreigabe erteilen?</label>
-            <div class="d-flex gap-4 mt-2">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="approval" id="approvalJa" value="ja">
-                    <label class="form-check-label fs-5" for="approvalJa">Ja</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="approval" id="approvalNein" value="nein">
-                    <label class="form-check-label fs-5" for="approvalNein">Nein</label>
-                </div>
-            </div>
-        </div>
+    {# Wie geht es weiter #}
+    <div class="df-howto">
+        Wie geht es nun weiter?<br>
+        Sie geben die Druckdatei frei (wählen Sie "Ja" und klicken Sie auf den Button "DRUCKFREIGABE ERTEILEN")<br>
+        Ihr Auftrag geht in die Produktion<br>
+        Der Versand wird in ca. 1 Woche erfolgen (früherer Versandzeitpunkt bei bestellter Express-Option)
+        <br><br>
+        oder
+        <br><br>
+        Sie teilen uns Ihre Änderungswünsche mit (wählen Sie "Nein", notieren Sie Ihre Änderungswünsche und klicken Sie auf den Button "KEINE DRUCKFREIGABE ERTEILEN")<br>
+        Ihr Auftrag geht in die Grafikabteilung<br>
+        Sie erhalten eine neue Druckvorschau per Mail
+    </div>
 
-        {# 5. Kommentarfeld (nur bei Nein) #}
-        <div class="mb-3" id="commentField" style="display:none;">
-            <label for="approvalComment" class="form-label fw-bold">Änderungswünsche:</label>
-            <textarea
-                id="approvalComment"
-                name="comment"
-                class="form-control"
-                rows="4"
-                placeholder="Bitte hier Änderungswünsche eintragen"
-            ></textarea>
-        </div>
+    {# Formular #}
+    {% if not success %}
+    <form method="post" action="{{ path('frontend.druckfreigabe.submit', { orderNumber: orderNumber }) }}">
 
-        {# 6. Button #}
-        <div class="mt-4">
-            <button type="submit" id="approvalButton" class="btn btn-secondary btn-lg" disabled>
-                Bitte wählen Sie Ja oder Nein
-            </button>
+        <textarea
+            id="df-comment"
+            name="comment"
+            class="form-control df-comment"
+            rows="4"
+            placeholder="Bitte hier Änderungswünsche eintragen"
+            style="display:none;"
+        ></textarea>
+
+        <div class="df-form-row">
+            <select id="df-select" name="approval" class="df-select">
+                <option value="">bitte wählen!</option>
+                <option value="ja">Ja</option>
+                <option value="nein">Nein</option>
+            </select>
+            <button type="submit" id="df-btn" class="df-btn">KEINE AUSWAHL</button>
         </div>
 
     </form>
-
     {% endif %}
 
 </div>
 
-<div class="footer-druckfreigabe mt-4 mb-4 text-center">
+<div class="df-footer">
     <a href="/impressum">Impressum</a>
     &nbsp;&nbsp;|&nbsp;&nbsp;
     <a href="/kontaktformular">Kontakt</a>
@@ -130,25 +224,26 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    var radios      = document.querySelectorAll('input[name="approval"]');
-    var commentField = document.getElementById('commentField');
-    var button      = document.getElementById('approvalButton');
+    var select  = document.getElementById('df-select');
+    var comment = document.getElementById('df-comment');
+    var btn     = document.getElementById('df-btn');
 
-    if (!radios.length) return;
+    if (!select) return;
 
-    radios.forEach(function (radio) {
-        radio.addEventListener('change', function () {
-            button.disabled = false;
-            if (this.value === 'ja') {
-                commentField.style.display = 'none';
-                button.textContent = 'Druckfreigabe erteilen';
-                button.className   = 'btn btn-success btn-lg';
-            } else {
-                commentField.style.display = 'block';
-                button.textContent = 'Keine Druckfreigabe erteilen';
-                button.className   = 'btn btn-danger btn-lg';
-            }
-        });
+    select.addEventListener('change', function () {
+        if (this.value === 'ja') {
+            comment.style.display = 'none';
+            btn.textContent = 'DRUCKFREIGABE ERTEILEN';
+            btn.className   = 'df-btn';
+        } else if (this.value === 'nein') {
+            comment.style.display = 'block';
+            btn.textContent = 'KEINE DRUCKFREIGABE ERTEILEN';
+            btn.className   = 'df-btn btn-no';
+        } else {
+            comment.style.display = 'none';
+            btn.textContent = 'KEINE AUSWAHL';
+            btn.className   = 'df-btn';
+        }
     });
 });
 </script>
