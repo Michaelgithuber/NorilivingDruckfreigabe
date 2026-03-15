@@ -85,9 +85,14 @@ class DruckfreigabeController extends StorefrontController
             $posNode->addChild('number', $position['number']);
 
             $posAttrs     = $posNode->addChild('attributes');
+
             $freigabeAttr = $posAttrs->addChild('attribute');
             $freigabeAttr->addChild('name', 'd_druckfreigabe');
             $freigabeAttr->addChild('value', $druckfreigabeValue);
+
+            $posKomAttr = $posAttrs->addChild('attribute');
+            $posKomAttr->addChild('name', 'd_kommentar');
+            $posKomAttr->addChild('value', htmlspecialchars($comment, ENT_XML1, 'UTF-8'));
         }
 
         $outputDir = $_SERVER['DOCUMENT_ROOT'] . '/media/som-druckfreigabe';
