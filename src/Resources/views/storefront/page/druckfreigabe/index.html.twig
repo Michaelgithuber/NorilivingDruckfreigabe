@@ -2,213 +2,155 @@
 
 {% block base_main %}
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
 
-<h1>Druckfreigabe {{ orderNumber }}</h1>
+    <h1 class="mb-4">Druckfreigabe {{ orderNumber }}</h1>
 
-<div class="row mt-4">
+    {% if success %}
+        <div class="alert alert-success">
+            <strong>Vielen Dank!</strong> Ihre Druckfreigabe wurde erfolgreich übermittelt.
+            {% if approvalValue == 'erteilt' %}
+                Ihr Auftrag geht in die Produktion. Der Versand erfolgt in ca. 1 Woche.
+            {% else %}
+                Ihr Auftrag geht in die Grafikabteilung. Sie erhalten eine neue Druckvorschau per Mail.
+            {% endif %}
+        </div>
+    {% endif %}
 
-{% for position in positions %}
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
 
-<div class="col-lg-3 col-md-6 mb-4">
+    {# 1. Druckplatten Übersicht #}
+    <h3>Druckplatten Übersicht</h3>
 
-<div class="card p-3 h-100">
+    <div class="row mt-3">
+        {% for position in positions %}
+            {% for plate in position.plates %}
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card p-3 h-100">
+                        <h6 class="text-muted mb-2">
+                            Position {{ position.number }} &mdash; Platte {{ plate.number }}
+                        </h6>
+                        <img
+                            src="{{ plate.preview }}"
+                            class="img-fluid mb-3"
+                            style="height:280px; object-fit:contain;"
+                            alt="Vorschau Pos. {{ position.number }} Platte {{ plate.number }}"
+                        />
+                        <a href="{{ plate.download }}" target="_blank" class="btn btn-outline-primary w-100">
+                            Platte öffnen
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
 
-<h5>Position {{ position.number }}</h5>
+    {# 2. Vorschau Zusammenfassung #}
+    <div class="second-display-container mt-4">
+        <div class="second-display-title">Vorschau Zusammenfassung</div>
+        <div class="second-display">
+            {% for position in positions %}
+                {% for plate in position.plates %}
+                    <div class="image-wrapper">
+                        <div class="image">
+                            <img src="{{ plate.preview }}" class="custom-image" />
+                        </div>
+                        <div class="text-center small mt-1">
+                            Pos. {{ position.number }} / Pl. {{ plate.number }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
 
-<img
-src="{{ position.preview }}"
-class="img-fluid mb-3"
-style="height:320px; object-fit:cover;"
-/>
+    {# 3. Hinweistext & Formular #}
+    {% if not success %}
 
-<a
-href="{{ position.download }}"
-target="_blank"
-class="btn btn-primary w-100"
->
-Platte öffnen
-</a>
+    <div class="notice-text mt-5">
+        Bitte die Originaldatei (Link „Platte öffnen") in 1:1 unbedingt prüfen!
+        <br><br>
+        <strong>WICHTIG:</strong> Bei Nachbestellungen / Ergänzungsbestellungen kann es zu Farbabweichungen kommen!
+        Informieren Sie uns bitte <strong>vor</strong> der Druckfreigabe, falls es sich um eine Nach- bzw. Ergänzungsbestellung handelt.
+        <br><br>
+        <strong>Wie geht es weiter?</strong><br>
+        Wählen Sie <strong>„Ja"</strong> → Auftrag geht in die Produktion (Versand in ca. 1 Woche).<br>
+        Wählen Sie <strong>„Nein"</strong> → Notieren Sie Ihre Änderungswünsche → Auftrag geht in die Grafikabteilung.
+    </div>
+
+    <form method="post" action="{{ path('frontend.druckfreigabe.submit', { orderNumber: orderNumber }) }}" class="mt-4">
+
+        {# 4. Druckfreigabe Auswahl #}
+        <div class="mb-3">
+            <label class="form-label fw-bold fs-5">Druckfreigabe erteilen?</label>
+            <div class="d-flex gap-4 mt-2">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="approval" id="approvalJa" value="ja">
+                    <label class="form-check-label fs-5" for="approvalJa">Ja</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="approval" id="approvalNein" value="nein">
+                    <label class="form-check-label fs-5" for="approvalNein">Nein</label>
+                </div>
+            </div>
+        </div>
+
+        {# 5. Kommentarfeld (nur bei Nein) #}
+        <div class="mb-3" id="commentField" style="display:none;">
+            <label for="approvalComment" class="form-label fw-bold">Änderungswünsche:</label>
+            <textarea
+                id="approvalComment"
+                name="comment"
+                class="form-control"
+                rows="4"
+                placeholder="Bitte hier Änderungswünsche eintragen"
+            ></textarea>
+        </div>
+
+        {# 6. Button #}
+        <div class="mt-4">
+            <button type="submit" id="approvalButton" class="btn btn-secondary btn-lg" disabled>
+                Bitte wählen Sie Ja oder Nein
+            </button>
+        </div>
+
+    </form>
+
+    {% endif %}
 
 </div>
 
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-<div class="second-display-container">
-
-<div class="second-display-title">
-Vorschau Zusammenfassung
-</div>
-
-<div class="second-display">
-
-{% for position in positions %}
-<div class="image-wrapper">
-<div class="image">
-<img src="{{ position.preview }}" class="custom-image"/>
-</div>
-</div>
-{% endfor %}
-
-</div>
-
-<div class="notice-text">
-
-Bitte die Originaldatei (Link Platte 1 usw.) in 1:1 unbedingt prüfen!
-<br><br>
-
-WICHTIG: Bei Nachbestellungen / Ergänzungsbestellungen kann es zu Farbabweichungen kommen!
-<br>
-Informieren Sie uns bitte vor der Druckfreigabe, falls es sich bei diesem Auftrag um eine Nach- bzw. Ergänzungsbestellung handelt.
-<br><br>
-
-<img src="/image/banner-erklaerung.jpg">
-
-<br><br>
-
-Wie geht es nun weiter?
-<br>
-Sie geben die Druckdatei frei (wählen Sie "Ja" und klicken Sie auf den Button "DRUCKFREIGABE ERTEILEN")
-<br>
-Ihr Auftrag geht in die Produktion
-<br>
-Der Versand wird in ca. 1 Woche erfolgen
-<br><br>
-
-oder
-<br><br>
-
-Sie teilen uns Ihre Änderungswünsche mit (wählen Sie "Nein", notieren Sie Ihre Änderungswünsche und klicken Sie auf den Button "KEINE DRUCKFREIGABE ERTEILEN")
-<br>
-Ihr Auftrag geht in die Grafikabteilung
-<br>
-Sie erhalten eine neue Druckvorschau per Mail
-
-</div>
-
-<textarea
-placeholder="Bitte hier Änderungswünsche eintragen"
-id="approvalComment"
-name="comments"
-rows="4"
-cols="50"
-></textarea>
-
-<select id="printApprovalSelect">
-<option value="kA">bitte wählen!</option>
-<option value="ja">Ja</option>
-<option value="nein">Nein</option>
-</select>
-
-<button id="approvalButton">
-Druckfreigabe erteilen
-</button>
-
-</div>
-
-<div class="footer-druckfreigabe">
-<a href="/impressum">Impressum</a>
-&nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="/kontaktformular">Kontakt</a>
+<div class="footer-druckfreigabe mt-4 mb-4 text-center">
+    <a href="/impressum">Impressum</a>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="/kontaktformular">Kontakt</a>
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    var radios      = document.querySelectorAll('input[name="approval"]');
+    var commentField = document.getElementById('commentField');
+    var button      = document.getElementById('approvalButton');
 
-document.addEventListener("DOMContentLoaded", function() {
+    if (!radios.length) return;
 
-var imageDivs = document.querySelectorAll('.image');
-var maxHeight = 0;
-
-imageDivs.forEach(function(div) {
-
-var img = div.querySelector('img');
-
-if (img) {
-
-img.addEventListener('load', function() {
-
-if (img.naturalHeight > maxHeight) {
-maxHeight = img.naturalHeight;
-updateDivHeights(maxHeight);
-}
-
+    radios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            button.disabled = false;
+            if (this.value === 'ja') {
+                commentField.style.display = 'none';
+                button.textContent = 'Druckfreigabe erteilen';
+                button.className   = 'btn btn-success btn-lg';
+            } else {
+                commentField.style.display = 'block';
+                button.textContent = 'Keine Druckfreigabe erteilen';
+                button.className   = 'btn btn-danger btn-lg';
+            }
+        });
+    });
 });
-
-}
-
-});
-
-function updateDivHeights(height) {
-
-imageDivs.forEach(function(div) {
-div.style.height = height + 'px';
-});
-
-}
-
-});
-
-</script>
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function() {
-
-var select = document.getElementById('printApprovalSelect');
-var textarea = document.getElementById('approvalComment');
-
-function toggleCommentField() {
-
-if (select.value === 'nein') {
-textarea.style.display = 'block';
-}
-else {
-textarea.style.display = 'none';
-}
-
-}
-
-toggleCommentField();
-
-select.addEventListener('change', toggleCommentField);
-
-});
-
-</script>
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function() {
-
-var select = document.getElementById('printApprovalSelect');
-var button = document.getElementById('approvalButton');
-
-function updateButtonLabel() {
-
-if (select.value === 'ja') {
-button.textContent = 'Druckfreigabe erteilen';
-}
-else if (select.value === 'nein') {
-button.textContent = 'Keine Druckfreigabe erteilen';
-}
-else {
-button.textContent = 'Keine Auswahl';
-}
-
-}
-
-updateButtonLabel();
-
-select.addEventListener('change', updateButtonLabel);
-
-});
-
 </script>
 
 {% endblock %}
