@@ -13,8 +13,9 @@
 .df-order-box table td:last-child  { font-weight: 600; }
 
 /* ── Positionen Grid (2 pro Zeile, auto-wrap) ────── */
-.df-positions-grid { display: flex; flex-wrap: wrap; gap: 32px 32px; margin-bottom: 32px; }
-.df-position      { flex: 0 0 calc(50% - 16px); display: flex; align-items: flex-start; gap: 12px; padding-bottom: 28px; border-bottom: 2px solid #aaa; }
+.df-positions-grid { display: flex; flex-wrap: wrap; gap: 24px 32px; margin-bottom: 32px; }
+.df-position      { flex: 0 0 calc(50% - 16px); display: flex; align-items: flex-start; gap: 12px; padding-bottom: 0; }
+.df-row-sep       { flex: 0 0 100%; height: 2px; background: #aaa; margin: 8px 0; }
 .df-pos-info      { width: 140px; min-width: 140px; font-size: 12px; line-height: 1.6; }
 .df-pos-info .lbl { color: #555; }
 .df-pos-info .val { font-weight: 600; color: #c0392b; }
@@ -147,6 +148,9 @@
 
         </div>
     </div>
+    {% if loop.index is even and not loop.last %}
+    <div class="df-row-sep"></div>
+    {% endif %}
     {% endfor %}
     </div>{# Ende df-positions-grid #}
 
