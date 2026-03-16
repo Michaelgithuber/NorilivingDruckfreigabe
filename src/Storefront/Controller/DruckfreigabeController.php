@@ -2,6 +2,7 @@
 
 namespace NorilivingDruckfreigabe\Storefront\Controller;
 
+use Shopware\Core\PlatformRequest;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,11 +14,22 @@ class DruckfreigabeController extends StorefrontController
     #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.page',
-        defaults: ['_loginRequired' => true],
+        defaults: ['_csrf_protection' => false],
         methods: ['GET']
     )]
     public function index(string $orderNumber, Request $request): Response
     {
+        if (!$this->isAccessAllowed($orderNumber, $request)) {
+            return $this->renderStorefront(
+                '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+                [
+                    'orderNumber'    => $orderNumber,
+                    'showVerifyForm' => true,
+                    'verifyError'    => null,
+                ]
+            );
+        }
+
         $data = $this->loadOrderData($orderNumber);
 
         if ($data === null) {
@@ -27,21 +39,60 @@ class DruckfreigabeController extends StorefrontController
         return $this->renderStorefront(
             '@Storefront/storefront/page/druckfreigabe/index.html.twig',
             array_merge($data, [
-                'orderNumber' => $orderNumber,
-                'success'     => false,
-                'error'       => null,
+                'orderNumber'    => $orderNumber,
+                'showVerifyForm' => false,
+                'success'        => false,
+                'error'          => null,
             ])
         );
     }
 
     #[Route(
+        path: '/druckfreigabe/{orderNumber}/verify',
+        name: 'frontend.druckfreigabe.verify',
+        defaults: ['_csrf_protection' => false],
+        methods: ['POST']
+    )]
+    public function verify(string $orderNumber, Request $request): Response
+    {
+        $plz     = trim($request->request->get('plz', ''));
+        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/som/' . $orderNumber . '_XML.xml';
+
+        if (!file_exists($xmlPath)) {
+            return new Response('Bestellung nicht gefunden: ' . $orderNumber, 404);
+        }
+
+        $xml    = simplexml_load_file($xmlPath);
+        $xmlPlz = trim((string) $xml->shipping_to->order_shipping_zipcode);
+
+        if ($plz !== $xmlPlz) {
+            return $this->renderStorefront(
+                '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+                [
+                    'orderNumber'    => $orderNumber,
+                    'showVerifyForm' => true,
+                    'verifyError'    => 'Die eingegebene Postleitzahl stimmt nicht überein.',
+                ]
+            );
+        }
+
+        $request->getSession()->set('druckfreigabe_verified_' . $orderNumber, true);
+
+        return $this->redirectToRoute('frontend.druckfreigabe.page', ['orderNumber' => $orderNumber]);
+    }
+
+    #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.submit',
-        defaults: ['_loginRequired' => true, '_csrf_protection' => false],
+        defaults: ['_csrf_protection' => false],
         methods: ['POST']
     )]
     public function submit(string $orderNumber, Request $request): Response
     {
+        if (!$this->isAccessAllowed($orderNumber, $request)) {
+            return $this->redirectToRoute('frontend.druckfreigabe.page', ['orderNumber' => $orderNumber]);
+        }
+
         $approval = $request->request->get('approval', '');
         $comment  = trim($request->request->get('comment', ''));
 
@@ -55,9 +106,10 @@ class DruckfreigabeController extends StorefrontController
             return $this->renderStorefront(
                 '@Storefront/storefront/page/druckfreigabe/index.html.twig',
                 array_merge($data, [
-                    'orderNumber' => $orderNumber,
-                    'success'     => false,
-                    'error'       => 'Bitte wählen Sie Ja oder Nein.',
+                    'orderNumber'    => $orderNumber,
+                    'showVerifyForm' => false,
+                    'success'        => false,
+                    'error'          => 'Bitte wählen Sie Ja oder Nein.',
                 ])
             );
         }
@@ -109,12 +161,29 @@ class DruckfreigabeController extends StorefrontController
         return $this->renderStorefront(
             '@Storefront/storefront/page/druckfreigabe/index.html.twig',
             array_merge($data, [
-                'orderNumber'   => $orderNumber,
-                'success'       => true,
-                'approvalValue' => $druckfreigabeValue,
-                'error'         => null,
+                'orderNumber'    => $orderNumber,
+                'showVerifyForm' => false,
+                'success'        => true,
+                'approvalValue'  => $druckfreigabeValue,
+                'error'          => null,
             ])
         );
+    }
+
+    private function isAccessAllowed(string $orderNumber, Request $request): bool
+    {
+        // PLZ per Session verifiziert
+        if ($request->getSession()->get('druckfreigabe_verified_' . $orderNumber) === true) {
+            return true;
+        }
+
+        // Kunde ist eingeloggt
+        $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
+        if ($context !== null && $context->getCustomer() !== null) {
+            return true;
+        }
+
+        return false;
     }
 
     private function loadOrderData(string $orderNumber): ?array
