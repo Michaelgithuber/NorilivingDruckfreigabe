@@ -4,14 +4,15 @@
 
     <card>
         <title>Noriliving Druckfreigabe</title>
-        <title lang="en-GB">Noriliving Print Approval</title>
+        <title lang="en-GB">Noriliving Druckfreigabe</title>
 
-        <input-field type="text">
+        <input-field>
             <name>erlebnisweltId</name>
             <label>Erlebniswelt ID (nach Freigabe)</label>
-            <label lang="en-GB">CMS Page ID (after approval)</label>
-            <helpText>Die UUID der Shopware-Erlebniswelt, die nach der Druckfreigabe angezeigt wird. Zu finden in der Admin-URL der Erlebniswelt.</helpText>
-            <helpText lang="en-GB">UUID of the Shopware CMS page shown after print approval. Found in the admin URL of the experience world.</helpText>
+            <label lang="en-GB">Erlebniswelt ID (after approval)</label>
+            <helpText>UUID der Erlebniswelt die nach Druckfreigabe angezeigt wird (aus der Admin-URL).</helpText>
+            <helpText lang="en-GB">UUID of the CMS page shown after print approval (from admin URL).</helpText>
+            <defaultValue></defaultValue>
         </input-field>
 
     </card>
