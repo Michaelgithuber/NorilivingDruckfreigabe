@@ -104,6 +104,20 @@
 .df-btn.btn-no:hover { background: #c0392b; }
 .df-comment       { width: 100%; margin-top: 12px; }
 
+/* ── Bestätigung ─────────────────────────────────── */
+.df-success-box   { text-align: center; padding: 40px 32px; border-radius: 12px; margin-bottom: 32px; }
+.df-success-ja    { background: #f0faf4; border: 2px solid #27ae60; }
+.df-success-nein  { background: #fff8f0; border: 2px solid #e67e22; }
+.df-success-icon  { font-size: 56px; margin-bottom: 12px; }
+.df-success-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.df-success-ja .df-success-title  { color: #1e8449; }
+.df-success-nein .df-success-title { color: #ca6f1e; }
+.df-success-order { color: #555; margin-bottom: 24px; }
+.df-success-steps { display: inline-block; text-align: left; margin-bottom: 28px; }
+.df-success-step  { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 15px; }
+.df-success-back  { font-size: 14px; }
+.df-erlebniswelt  { margin-top: 32px; }
+
 /* ── Footer ──────────────────────────────────────── */
 .df-footer        { text-align: center; font-size: 13px; margin-top: 40px; color: #666; }
 .df-footer a      { color: #666; text-decoration: none; }
@@ -114,15 +128,34 @@
 
     <div class="df-title">Druckfreigabe</div>
 
-    {# Meldungen #}
+    {# Bestätigung nach Absenden #}
     {% if success %}
-        <div class="alert alert-success mb-4">
-            <strong>Vielen Dank!</strong> Ihre Druckfreigabe wurde erfolgreich übermittelt.
-            {% if approvalValue == 'erteilt' %}
-                Ihr Auftrag geht in die Produktion. Der Versand erfolgt in ca. 1 Woche.
-            {% else %}
-                Ihr Auftrag geht in die Grafikabteilung. Sie erhalten eine neue Druckvorschau per Mail.
-            {% endif %}
+        <div class="df-success-box {% if approvalValue == 'erteilt' %}df-success-ja{% else %}df-success-nein{% endif %}">
+            <div class="df-success-icon">{% if approvalValue == 'erteilt' %}✅{% else %}✏️{% endif %}</div>
+            <h2 class="df-success-title">
+                {% if approvalValue == 'erteilt' %}
+                    Druckfreigabe erteilt!
+                {% else %}
+                    Änderungswunsch übermittelt
+                {% endif %}
+            </h2>
+            <p class="df-success-order">Bestellung: <strong>{{ orderInfo.number }}</strong> &nbsp;|&nbsp; {{ orderInfo.name }}</p>
+            <div class="df-success-steps">
+                {% if approvalValue == 'erteilt' %}
+                    <div class="df-success-step">🖨️ <span>Ihr Auftrag geht jetzt in die <strong>Produktion</strong></span></div>
+                    <div class="df-success-step">📦 <span>Der Versand erfolgt in ca. <strong>1 Woche</strong></span></div>
+                    <div class="df-success-step">📧 <span>Sie erhalten eine <strong>Versandbestätigung per Mail</strong></span></div>
+                {% else %}
+                    <div class="df-success-step">🎨 <span>Ihr Auftrag geht in die <strong>Grafikabteilung</strong></span></div>
+                    <div class="df-success-step">📧 <span>Sie erhalten eine <strong>neue Druckvorschau per Mail</strong></span></div>
+                {% endif %}
+            </div>
+            <a href="/account/order" class="btn btn-outline-secondary df-success-back">← Zurück zu meinen Bestellungen</a>
+        </div>
+
+        {# Erlebniswelt-Bereich — hier kannst du Inhalte ergänzen #}
+        <div class="df-erlebniswelt">
+            {# Platzhalter für spätere Inhalte z.B. Produktempfehlungen, Pflegehinweise etc. #}
         </div>
     {% endif %}
 
