@@ -75,15 +75,16 @@
 .df-vorschau-wrap h3 { font-size: 18px; margin-bottom: 8px; }
 .df-vorschau-box   {
     border: 1px solid #ccc;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     display: flex;
     align-items: stretch;
     height: 200px;
     gap: 5px;
 }
-.df-vorschau-pos   { display: flex; align-items: stretch; flex: 1; min-width: 0; }
-.df-vorschau-item  { flex: 1; min-width: 0; overflow: hidden; }
-.df-vorschau-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.df-vorschau-pos   { display: flex; align-items: stretch; flex: 0 0 auto; gap: 2px; }
+.df-vorschau-item  { flex: 0 0 auto; overflow: hidden; }
+.df-vorschau-item img { height: 100%; width: auto; display: block; object-fit: contain; }
 
 /* ── Hinweistext ─────────────────────────────────── */
 .df-notice        { font-style: italic; font-size: 13px; color: #333; margin-bottom: 8px; }
@@ -198,9 +199,9 @@
         <h3>Vorschau Zusammenfassung</h3>
         <div class="df-vorschau-box">
             {% for position in positions %}
-            <div class="df-vorschau-pos" style="flex: {{ position.total_breite }};">
+            <div class="df-vorschau-pos">
                 {% for plate in position.plates %}
-                <div class="df-vorschau-item" style="flex: {{ plate.breite|default('1') }};">
+                <div class="df-vorschau-item">
                     <img src="{{ plate.preview }}" alt="Pos. {{ position.number }} Pl. {{ plate.number }}" />
                 </div>
                 {% endfor %}
