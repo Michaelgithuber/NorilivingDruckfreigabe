@@ -53,9 +53,9 @@
 
 /* ── Positionen Grid (proportionale Breite je Position) ────── */
 .df-positions-grid { display: flex; flex-wrap: wrap; gap: 32px 64px; margin-bottom: 32px; }
-.df-position      { max-width: 100%; display: flex; align-items: flex-start; gap: 6px; padding-bottom: 0; }
+.df-position      { max-width: 100%; display: flex; align-items: flex-start; gap: 3px; padding-bottom: 0; }
 .df-row-sep       { flex: 0 0 100%; height: 2px; background: #aaa; margin: 8px 0; }
-.df-pos-info      { width: 140px; min-width: 140px; font-size: 12px; line-height: 1.6; }
+.df-pos-info      { width: 140px; min-width: 140px; font-size: 12px; line-height: 1.1; }
 .df-pos-info .lbl { color: #555; }
 .df-pos-info .val { font-weight: 600; color: #c0392b; }
 .df-pos-info .val-black { font-weight: 600; color: #222; }
@@ -82,7 +82,7 @@
     height: 200px;
     gap: 5px;
 }
-.df-vorschau-pos   { display: flex; align-items: stretch; flex: 0 0 auto; gap: 2px; }
+.df-vorschau-pos   { display: flex; align-items: stretch; flex: 0 0 auto; gap: 0; }
 .df-vorschau-item  { flex: 0 0 auto; overflow: hidden; }
 .df-vorschau-item img { height: 100%; width: auto; display: block; object-fit: contain; }
 
@@ -212,11 +212,11 @@
 
     {# Hinweistexte #}
     <div class="df-notice">
-        Bitte die Originaldatei (Link Platte 1 usw.) in 1:1 unbedingt prüfen!
+        <strong>Bitte die Originaldatei (Link Platte 1 usw.) in 1:1 unbedingt prüfen!</strong>
     </div>
     <div class="df-notice">
-        WICHTIG: Bei Nachbestellungen / Ergänzungsbestellungen kann es zu Farbabweichungen kommen!<br>
-        Informieren Sie uns bitte vor der Druckfreigabe, falls es sich bei diesem Auftrag um eine Nach- bzw. Ergänzungsbestellung handelt.
+        <strong>WICHTIG:</strong> Bei Nachbestellungen / Ergänzungsbestellungen kann es zu Farbabweichungen kommen!<br>
+        Informieren Sie uns bitte <strong>vor der Druckfreigabe</strong>, falls es sich bei diesem Auftrag um eine Nach- bzw. Ergänzungsbestellung handelt.
     </div>
 
     {# Erklärungsbanner #}
@@ -224,16 +224,14 @@
 
     {# Wie geht es weiter #}
     <div class="df-howto">
-        Wie geht es nun weiter?<br>
-        Sie geben die Druckdatei frei (wählen Sie "Ja" und klicken Sie auf den Button "DRUCKFREIGABE ERTEILEN")<br>
-        Ihr Auftrag geht in die Produktion<br>
-        Der Versand wird in ca. 1 Woche erfolgen (früherer Versandzeitpunkt bei bestellter Express-Option)
+        <strong>Wie geht es nun weiter?</strong><br>
+        ✅ Wählen Sie <strong>"Ja"</strong> und klicken Sie auf <strong>"DRUCKFREIGABE ERTEILEN"</strong><br>
+        → Ihr Auftrag geht in die Produktion<br>
+        → Der Versand erfolgt in ca. <strong>1 Woche</strong> (früher bei bestellter Express-Option)
         <br><br>
-        oder
-        <br><br>
-        Sie teilen uns Ihre Änderungswünsche mit (wählen Sie "Nein", notieren Sie Ihre Änderungswünsche und klicken Sie auf den Button "KEINE DRUCKFREIGABE ERTEILEN")<br>
-        Ihr Auftrag geht in die Grafikabteilung<br>
-        Sie erhalten eine neue Druckvorschau per Mail
+        ❌ Wählen Sie <strong>"Nein"</strong>, notieren Sie Ihre Änderungswünsche und klicken Sie auf <strong>"KEINE DRUCKFREIGABE ERTEILEN"</strong><br>
+        → Ihr Auftrag geht in die Grafikabteilung<br>
+        → Sie erhalten eine neue Druckvorschau per Mail
     </div>
 
     {# Formular #}
