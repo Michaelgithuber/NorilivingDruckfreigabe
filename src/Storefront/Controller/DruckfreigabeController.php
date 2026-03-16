@@ -2,7 +2,7 @@
 
 namespace NorilivingDruckfreigabe\Storefront\Controller;
 
-use Shopware\Core\Content\Cms\SalesChannel\SalesChannelCmsPageLoader;
+use Shopware\Core\Content\Cms\SalesChannel\AbstractCmsPageLoader;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\PlatformRequest;
 use Shopware\Storefront\Controller\StorefrontController;
@@ -18,7 +18,7 @@ class DruckfreigabeController extends StorefrontController
     private const PLZ_LOCKOUT_SECS = 900; // 15 Minuten
 
     public function __construct(
-        private readonly SalesChannelCmsPageLoader $cmsPageLoader
+        private readonly AbstractCmsPageLoader $cmsPageLoader
     ) {}
 
     // ── PLZ-Eingabe Landingpage ──────────────────────────────────────────────
