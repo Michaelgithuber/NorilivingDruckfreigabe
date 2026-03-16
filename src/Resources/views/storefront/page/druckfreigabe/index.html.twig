@@ -152,12 +152,14 @@
             <a href="{{ path('frontend.account.order.page') }}" class="btn btn-outline-secondary btn-sm">← Zurück zu meinen Bestellungen</a>
         </div>
 
-        {# ── Erlebniswelt (CMS-Seite df-erlebniswelt) ── #}
-        {% if cmsPage is defined and cmsPage %}
-            <div class="df-erlebniswelt">
-                {% sw_include '@Storefront/storefront/page/content/detail.html.twig' with { 'cmsPage': cmsPage } %}
-            </div>
-        {% endif %}
+        {# ── Erlebniswelt via Shopware Widget-Route ── #}
+        <div class="df-erlebniswelt" id="df-erlebniswelt"></div>
+        <script>
+        fetch('/widgets/cms/019cf7977caa78b7b2c148439054ef63')
+            .then(function(r){ return r.text(); })
+            .then(function(html){ document.getElementById('df-erlebniswelt').innerHTML = html; })
+            .catch(function(e){ console.log('Erlebniswelt nicht geladen:', e); });
+        </script>
     {% endif %}
 
     {% if error %}
