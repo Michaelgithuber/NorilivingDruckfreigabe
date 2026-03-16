@@ -23,7 +23,7 @@ class AccountOrderSubscriber implements EventSubscriberInterface
 
         foreach ($orders as $order) {
             $orderNumber = $order->getOrderNumber();
-            $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/som/' . $orderNumber . '_XML.xml';
+            $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/norilivingdruckfreigabe/som/' . $orderNumber . '_XML.xml';
 
             if (file_exists($xmlPath)) {
                 $ordersWithDruckfreigabe[] = $orderNumber;
