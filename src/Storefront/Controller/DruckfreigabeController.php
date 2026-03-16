@@ -11,6 +11,11 @@ use Symfony\Component\HttpFoundation\Response;
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class DruckfreigabeController extends StorefrontController
 {
+    private const MAX_PLZ_ATTEMPTS  = 5;
+    private const PLZ_LOCKOUT_SECS  = 900; // 15 Minuten
+
+    // ── PLZ-Eingabe Landingpage ──────────────────────────────────────────────
+
     #[Route(
         path: '/druckfreigabe',
         name: 'frontend.druckfreigabe.landing',
@@ -25,29 +30,30 @@ class DruckfreigabeController extends StorefrontController
             $orderNumber = trim($request->request->get('orderNumber', ''));
             $plz         = trim($request->request->get('plz', ''));
 
-            if ($orderNumber === '' || $plz === '') {
+            // 1) Path-Traversal-Schutz
+            if (!preg_match('/^\d+$/', $orderNumber)) {
+                $error = 'Ungültige Bestellnummer.';
+            } elseif ($orderNumber === '' || $plz === '') {
                 $error = 'Bitte Bestellnummer und Postleitzahl eingeben.';
             } else {
-                $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/norilivingdruckfreigabe/som/' . $orderNumber . '_XML.xml';
+                $verifyResult = $this->verifyPlz($orderNumber, $plz, $request);
 
-                if (!file_exists($xmlPath)) {
+                if ($verifyResult === 'locked') {
+                    $error = 'Zu viele Fehlversuche. Bitte 15 Minuten warten.';
+                } elseif ($verifyResult === 'not_found') {
                     $error = 'Bestellung nicht gefunden.';
+                } elseif ($verifyResult === 'wrong_plz') {
+                    $remaining = self::MAX_PLZ_ATTEMPTS - $this->getPlzAttempts($orderNumber, $request);
+                    $error = 'Die eingegebene Postleitzahl stimmt nicht überein. Noch ' . max(0, $remaining) . ' Versuch(e).';
                 } else {
-                    $xml    = simplexml_load_file($xmlPath);
-                    $xmlPlz = trim((string) $xml->shipping_to->order_shipping_zipcode);
-
-                    if ($plz !== $xmlPlz) {
-                        $error = 'Die eingegebene Postleitzahl stimmt nicht überein.';
-                    } else {
-                        $request->getSession()->set('druckfreigabe_verified_' . $orderNumber, true);
-                        return $this->redirectToRoute('frontend.druckfreigabe.page', ['orderNumber' => $orderNumber]);
-                    }
+                    // Erfolgreich verifiziert
+                    return $this->redirectToRoute('frontend.druckfreigabe.page', ['orderNumber' => $orderNumber]);
                 }
             }
         }
 
         return $this->renderStorefront(
-            '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+            '@NorilivingDruckfreigabe/storefront/page/druckfreigabe/index.html.twig',
             [
                 'orderNumber'    => $request->request->get('orderNumber', ''),
                 'showVerifyForm' => true,
@@ -57,6 +63,8 @@ class DruckfreigabeController extends StorefrontController
         );
     }
 
+    // ── Druckfreigabe-Seite anzeigen ─────────────────────────────────────────
+
     #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.page',
@@ -65,9 +73,14 @@ class DruckfreigabeController extends StorefrontController
     )]
     public function index(string $orderNumber, Request $request): Response
     {
+        // 1) Path-Traversal-Schutz
+        if (!preg_match('/^\d+$/', $orderNumber)) {
+            throw $this->createNotFoundException();
+        }
+
         if (!$this->isAccessAllowed($orderNumber, $request)) {
             return $this->renderStorefront(
-                '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+                '@NorilivingDruckfreigabe/storefront/page/druckfreigabe/index.html.twig',
                 [
                     'orderNumber'    => $orderNumber,
                     'showVerifyForm' => true,
@@ -79,11 +92,11 @@ class DruckfreigabeController extends StorefrontController
         $data = $this->loadOrderData($orderNumber);
 
         if ($data === null) {
-            return new Response('Bestellung nicht gefunden: ' . $orderNumber, 404);
+            throw $this->createNotFoundException('Bestellung nicht gefunden: ' . $orderNumber);
         }
 
-        return $this->renderStorefront(
-            '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+        $response = $this->renderStorefront(
+            '@NorilivingDruckfreigabe/storefront/page/druckfreigabe/index.html.twig',
             array_merge($data, [
                 'orderNumber'    => $orderNumber,
                 'showVerifyForm' => false,
@@ -91,7 +104,13 @@ class DruckfreigabeController extends StorefrontController
                 'error'          => null,
             ])
         );
+
+        $this->setNoCacheHeaders($response);
+
+        return $response;
     }
+
+    // ── PLZ-Verifikation POST ────────────────────────────────────────────────
 
     #[Route(
         path: '/druckfreigabe/{orderNumber}/verify',
@@ -101,40 +120,51 @@ class DruckfreigabeController extends StorefrontController
     )]
     public function verify(string $orderNumber, Request $request): Response
     {
-        $plz     = trim($request->request->get('plz', ''));
-        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/norilivingdruckfreigabe/som/' . $orderNumber . '_XML.xml';
-
-        if (!file_exists($xmlPath)) {
-            return new Response('Bestellung nicht gefunden: ' . $orderNumber, 404);
+        // 1) Path-Traversal-Schutz
+        if (!preg_match('/^\d+$/', $orderNumber)) {
+            throw $this->createNotFoundException();
         }
 
-        $xml    = simplexml_load_file($xmlPath);
-        $xmlPlz = trim((string) $xml->shipping_to->order_shipping_zipcode);
+        $plz          = trim($request->request->get('plz', ''));
+        $verifyResult = $this->verifyPlz($orderNumber, $plz, $request);
+        $error        = null;
 
-        if ($plz !== $xmlPlz) {
-            return $this->renderStorefront(
-                '@Storefront/storefront/page/druckfreigabe/index.html.twig',
-                [
-                    'orderNumber'    => $orderNumber,
-                    'showVerifyForm' => true,
-                    'verifyError'    => 'Die eingegebene Postleitzahl stimmt nicht überein.',
-                ]
-            );
+        if ($verifyResult === 'locked') {
+            $error = 'Zu viele Fehlversuche. Bitte 15 Minuten warten.';
+        } elseif ($verifyResult === 'not_found') {
+            throw $this->createNotFoundException('Bestellung nicht gefunden: ' . $orderNumber);
+        } elseif ($verifyResult === 'wrong_plz') {
+            $remaining = self::MAX_PLZ_ATTEMPTS - $this->getPlzAttempts($orderNumber, $request);
+            $error     = 'Die eingegebene Postleitzahl stimmt nicht überein. Noch ' . max(0, $remaining) . ' Versuch(e).';
+        } else {
+            return $this->redirectToRoute('frontend.druckfreigabe.page', ['orderNumber' => $orderNumber]);
         }
 
-        $request->getSession()->set('druckfreigabe_verified_' . $orderNumber, true);
-
-        return $this->redirectToRoute('frontend.druckfreigabe.page', ['orderNumber' => $orderNumber]);
+        return $this->renderStorefront(
+            '@NorilivingDruckfreigabe/storefront/page/druckfreigabe/index.html.twig',
+            [
+                'orderNumber'    => $orderNumber,
+                'showVerifyForm' => true,
+                'verifyError'    => $error,
+            ]
+        );
     }
+
+    // ── Freigabe abschicken ──────────────────────────────────────────────────
 
     #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.submit',
-        defaults: ['_csrf_protection' => false],
+        defaults: ['_csrf_protection' => true],   // CSRF aktiv
         methods: ['POST']
     )]
     public function submit(string $orderNumber, Request $request): Response
     {
+        // 1) Path-Traversal-Schutz
+        if (!preg_match('/^\d+$/', $orderNumber)) {
+            throw $this->createNotFoundException();
+        }
+
         if (!$this->isAccessAllowed($orderNumber, $request)) {
             return $this->redirectToRoute('frontend.druckfreigabe.page', ['orderNumber' => $orderNumber]);
         }
@@ -145,12 +175,12 @@ class DruckfreigabeController extends StorefrontController
         $data = $this->loadOrderData($orderNumber);
 
         if ($data === null) {
-            return new Response('Bestellung nicht gefunden: ' . $orderNumber, 404);
+            throw $this->createNotFoundException('Bestellung nicht gefunden: ' . $orderNumber);
         }
 
         if (!in_array($approval, ['ja', 'nein'], true)) {
             return $this->renderStorefront(
-                '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+                '@NorilivingDruckfreigabe/storefront/page/druckfreigabe/index.html.twig',
                 array_merge($data, [
                     'orderNumber'    => $orderNumber,
                     'showVerifyForm' => false,
@@ -179,7 +209,7 @@ class DruckfreigabeController extends StorefrontController
         $positionsNode = $xml->addChild('positions');
 
         foreach ($data['positions'] as $position) {
-            $posNode = $positionsNode->addChild('position');
+            $posNode  = $positionsNode->addChild('position');
             $posNode->addChild('number', $position['number']);
 
             $posAttrs     = $posNode->addChild('attributes');
@@ -204,8 +234,8 @@ class DruckfreigabeController extends StorefrontController
         $dom->loadXML($xml->asXML());
         $dom->save($outputDir . '/druckfreigabe-' . $orderNumber . '.xml');
 
-        return $this->renderStorefront(
-            '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+        $response = $this->renderStorefront(
+            '@NorilivingDruckfreigabe/storefront/page/druckfreigabe/index.html.twig',
             array_merge($data, [
                 'orderNumber'    => $orderNumber,
                 'showVerifyForm' => false,
@@ -214,22 +244,83 @@ class DruckfreigabeController extends StorefrontController
                 'error'          => null,
             ])
         );
+
+        $this->setNoCacheHeaders($response);
+
+        return $response;
+    }
+
+    // ── Hilfsmethoden ────────────────────────────────────────────────────────
+
+    /**
+     * Prüft PLZ gegen XML, zählt Fehlversuche.
+     * Gibt zurück: 'ok' | 'locked' | 'not_found' | 'wrong_plz'
+     */
+    private function verifyPlz(string $orderNumber, string $plz, Request $request): string
+    {
+        $session    = $request->getSession();
+        $lockKey    = 'df_lock_' . $orderNumber;
+        $attemptsKey = 'df_attempts_' . $orderNumber;
+
+        // Sperre aktiv?
+        $lockedUntil = $session->get($lockKey, 0);
+        if (time() < $lockedUntil) {
+            return 'locked';
+        }
+
+        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/norilivingdruckfreigabe/som/' . $orderNumber . '_XML.xml';
+
+        if (!file_exists($xmlPath)) {
+            return 'not_found';
+        }
+
+        $xml    = simplexml_load_file($xmlPath);
+        $xmlPlz = trim((string) $xml->shipping_to->order_shipping_zipcode);
+
+        if ($plz !== $xmlPlz) {
+            $attempts = (int) $session->get($attemptsKey, 0) + 1;
+            $session->set($attemptsKey, $attempts);
+
+            if ($attempts >= self::MAX_PLZ_ATTEMPTS) {
+                $session->set($lockKey, time() + self::PLZ_LOCKOUT_SECS);
+                $session->set($attemptsKey, 0);
+                return 'locked';
+            }
+
+            return 'wrong_plz';
+        }
+
+        // Erfolgreich: Zähler zurücksetzen, Session setzen
+        $session->set($attemptsKey, 0);
+        $session->set('druckfreigabe_verified_' . $orderNumber, true);
+
+        return 'ok';
+    }
+
+    private function getPlzAttempts(string $orderNumber, Request $request): int
+    {
+        return (int) $request->getSession()->get('df_attempts_' . $orderNumber, 0);
     }
 
     private function isAccessAllowed(string $orderNumber, Request $request): bool
     {
-        // PLZ per Session verifiziert
         if ($request->getSession()->get('druckfreigabe_verified_' . $orderNumber) === true) {
             return true;
         }
 
-        // Kunde ist eingeloggt
         $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
         if ($context !== null && $context->getCustomer() !== null) {
             return true;
         }
 
         return false;
+    }
+
+    private function setNoCacheHeaders(Response $response): void
+    {
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
     }
 
     private function loadOrderData(string $orderNumber): ?array
