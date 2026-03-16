@@ -153,13 +153,15 @@
         </div>
 
         {# ── Erlebniswelt via Shopware Widget-Route ── #}
-        <div class="df-erlebniswelt" id="df-erlebniswelt"></div>
-        <script>
-        fetch('/widgets/cms/019cf7977caa78b7b2c148439054ef63')
-            .then(function(r){ return r.text(); })
-            .then(function(html){ document.getElementById('df-erlebniswelt').innerHTML = html; })
-            .catch(function(e){ console.log('Erlebniswelt nicht geladen:', e); });
-        </script>
+        {% if erlebnisweltId is defined and erlebnisweltId %}
+            <div class="df-erlebniswelt" id="df-erlebniswelt"></div>
+            <script>
+            fetch('/widgets/cms/{{ erlebnisweltId|escape('js') }}')
+                .then(function(r){ return r.text(); })
+                .then(function(html){ document.getElementById('df-erlebniswelt').innerHTML = html; })
+                .catch(function(e){ console.log('Erlebniswelt nicht geladen:', e); });
+            </script>
+        {% endif %}
     {% endif %}
 
     {% if error %}

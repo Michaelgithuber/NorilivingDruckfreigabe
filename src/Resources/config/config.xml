@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+
+    <card>
+        <title>Noriliving Druckfreigabe</title>
+        <title lang="en-GB">Noriliving Print Approval</title>
+
+        <input-field type="text">
+            <name>erlebnisweltId</name>
+            <label>Erlebniswelt ID (nach Freigabe)</label>
+            <label lang="en-GB">CMS Page ID (after approval)</label>
+            <helpText>Die UUID der Shopware-Erlebniswelt, die nach der Druckfreigabe angezeigt wird. Zu finden in der Admin-URL der Erlebniswelt.</helpText>
+            <helpText lang="en-GB">UUID of the Shopware CMS page shown after print approval. Found in the admin URL of the experience world.</helpText>
+        </input-field>
+
+    </card>
+
+</config>

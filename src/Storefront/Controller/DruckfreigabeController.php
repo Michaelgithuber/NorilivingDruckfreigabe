@@ -3,6 +3,7 @@
 namespace NorilivingDruckfreigabe\Storefront\Controller;
 
 use Shopware\Core\PlatformRequest;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,6 +14,10 @@ class DruckfreigabeController extends StorefrontController
 {
     private const MAX_PLZ_ATTEMPTS = 5;
     private const PLZ_LOCKOUT_SECS = 900; // 15 Minuten
+
+    public function __construct(
+        private readonly SystemConfigService $systemConfig
+    ) {}
 
     // ── PLZ-Eingabe Landingpage ──────────────────────────────────────────────
 
@@ -242,6 +247,7 @@ class DruckfreigabeController extends StorefrontController
                 'success'        => true,
                 'approvalValue'  => $druckfreigabeValue,
                 'error'          => null,
+                'erlebnisweltId' => $this->systemConfig->get('NorilivingDruckfreigabe.config.erlebnisweltId'),
             ])
         );
 
