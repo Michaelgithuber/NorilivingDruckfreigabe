@@ -28,7 +28,7 @@ class DruckfreigabeController extends StorefrontController
             if ($orderNumber === '' || $plz === '') {
                 $error = 'Bitte Bestellnummer und Postleitzahl eingeben.';
             } else {
-                $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/som/' . $orderNumber . '_XML.xml';
+                $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/norilivingdruckfreigabe/som/' . $orderNumber . '_XML.xml';
 
                 if (!file_exists($xmlPath)) {
                     $error = 'Bestellung nicht gefunden.';
@@ -102,7 +102,7 @@ class DruckfreigabeController extends StorefrontController
     public function verify(string $orderNumber, Request $request): Response
     {
         $plz     = trim($request->request->get('plz', ''));
-        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/som/' . $orderNumber . '_XML.xml';
+        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/norilivingdruckfreigabe/som/' . $orderNumber . '_XML.xml';
 
         if (!file_exists($xmlPath)) {
             return new Response('Bestellung nicht gefunden: ' . $orderNumber, 404);
@@ -193,7 +193,7 @@ class DruckfreigabeController extends StorefrontController
             $posKomAttr->addChild('value', htmlspecialchars($comment, ENT_XML1, 'UTF-8'));
         }
 
-        $outputDir = $_SERVER['DOCUMENT_ROOT'] . '/media/som-druckfreigabe';
+        $outputDir = $_SERVER['DOCUMENT_ROOT'] . '/media/norilivingdruckfreigabe/som-druckfreigabe';
         if (!is_dir($outputDir)) {
             mkdir($outputDir, 0755, true);
         }
@@ -234,7 +234,7 @@ class DruckfreigabeController extends StorefrontController
 
     private function loadOrderData(string $orderNumber): ?array
     {
-        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/som/' . $orderNumber . '_XML.xml';
+        $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/norilivingdruckfreigabe/som/' . $orderNumber . '_XML.xml';
 
         if (!file_exists($xmlPath)) {
             return null;
