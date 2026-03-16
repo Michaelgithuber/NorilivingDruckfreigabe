@@ -47,9 +47,9 @@
 .df-title         { text-align: center; font-size: 28px; font-weight: bold; margin-bottom: 24px; }
 
 /* ── Bestellinfo Box ─────────────────────────────── */
-.df-order-box     { border: 1px solid #ddd; padding: 16px 20px; margin-bottom: 32px; font-size: 14px; }
-.df-order-box table td:first-child { color: #333; padding-right: 24px; white-space: nowrap; }
-.df-order-box table td:last-child  { font-weight: 600; }
+.df-order-box     { background: #f8f9fa; border-left: 4px solid #1a7f8e; border-radius: 4px; padding: 16px 24px; margin-bottom: 32px; display: flex; flex-wrap: wrap; gap: 8px 48px; }
+.df-order-box-item .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.df-order-box-item .value { font-weight: 600; color: #1a1a1a; font-size: 14px; }
 
 /* ── Positionen Grid (proportionale Breite je Position) ────── */
 .df-positions-grid { display: flex; flex-wrap: wrap; gap: 32px 64px; margin-bottom: 32px; }
@@ -62,8 +62,8 @@
 
 /* ── Platten ─────────────────────────────────────── */
 .df-plates        { flex: 1; min-width: 0; }
-.df-plates-row    { display: flex; align-items: flex-start; gap: 2px; }
-.df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.df-plates-row    { display: flex; align-items: flex-start; gap: 2px; background: #e0e0e0; }
+.df-plate-col     { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; background: #fff; }
 .df-plate-img-wrap { width: 100%; }
 .df-plate-img     { width: 100%; height: auto; display: block; }
 .df-plate-dim     { font-size: 11px; margin-top: 3px; }
@@ -132,12 +132,10 @@
 
     {# Bestellinfo #}
     <div class="df-order-box">
-        <table>
-            <tr><td>Ihre Bestellung:</td><td>{{ orderInfo.number }}</td></tr>
-            <tr><td>Auftragsdatum:</td><td>{{ orderInfo.date }}</td></tr>
-            <tr><td>Empfänger:</td><td>{{ orderInfo.name }}</td></tr>
-            <tr><td>Lieferadresse:</td><td>{{ orderInfo.address }}</td></tr>
-        </table>
+        <div class="df-order-box-item"><span class="label">Ihre Bestellung</span><span class="value">{{ orderInfo.number }}</span></div>
+        <div class="df-order-box-item"><span class="label">Auftragsdatum</span><span class="value">{{ orderInfo.date }}</span></div>
+        <div class="df-order-box-item"><span class="label">Empfänger</span><span class="value">{{ orderInfo.name }}</span></div>
+        <div class="df-order-box-item"><span class="label">Lieferadresse</span><span class="value">{{ orderInfo.address }}</span></div>
     </div>
 
     {# Positionen #}
