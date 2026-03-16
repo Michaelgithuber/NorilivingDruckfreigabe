@@ -2,6 +2,8 @@
 
 namespace NorilivingDruckfreigabe\Storefront\Controller;
 
+use Shopware\Core\Content\Cms\SalesChannel\SalesChannelCmsPageLoader;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\PlatformRequest;
 use Shopware\Storefront\Controller\StorefrontController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -11,8 +13,13 @@ use Symfony\Component\HttpFoundation\Response;
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class DruckfreigabeController extends StorefrontController
 {
-    private const MAX_PLZ_ATTEMPTS  = 5;
-    private const PLZ_LOCKOUT_SECS  = 900; // 15 Minuten
+    private const CMS_PAGE_ID      = '019cf7977caa78b7b2c148439054ef63';
+    private const MAX_PLZ_ATTEMPTS = 5;
+    private const PLZ_LOCKOUT_SECS = 900; // 15 Minuten
+
+    public function __construct(
+        private readonly SalesChannelCmsPageLoader $cmsPageLoader
+    ) {}
 
     // ── PLZ-Eingabe Landingpage ──────────────────────────────────────────────
 
@@ -242,6 +249,7 @@ class DruckfreigabeController extends StorefrontController
                 'success'        => true,
                 'approvalValue'  => $druckfreigabeValue,
                 'error'          => null,
+                'cmsPage'        => $this->loadCmsPage($request),
             ])
         );
 
@@ -251,6 +259,19 @@ class DruckfreigabeController extends StorefrontController
     }
 
     // ── Hilfsmethoden ────────────────────────────────────────────────────────
+
+    private function loadCmsPage(Request $request): ?object
+    {
+        $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
+        if ($context === null) {
+            return null;
+        }
+
+        $criteria = new Criteria([self::CMS_PAGE_ID]);
+        $pages    = $this->cmsPageLoader->load($request, $criteria, $context);
+
+        return $pages->first();
+    }
 
     /**
      * Prüft PLZ gegen XML, zählt Fehlversuche.
