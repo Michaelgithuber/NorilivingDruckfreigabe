@@ -155,7 +155,7 @@ class DruckfreigabeController extends StorefrontController
     #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.submit',
-        defaults: ['_csrf_protection' => true],   // CSRF aktiv
+        defaults: ['_csrf_protection' => false],
         methods: ['POST']
     )]
     public function submit(string $orderNumber, Request $request): Response

@@ -235,7 +235,6 @@
     {# Formular #}
     {% if not success %}
     <form method="post" action="{{ path('frontend.druckfreigabe.submit', { orderNumber: orderNumber }) }}">
-        {{ sw_csrf('frontend.druckfreigabe.submit') }}
 
         <textarea
             id="df-comment"
