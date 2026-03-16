@@ -5,20 +5,39 @@
 {% if showVerifyForm %}
 <div class="df-page" style="max-width:480px; margin:60px auto; padding:0 20px;">
     <h1 class="df-title">Druckfreigabe</h1>
-    <form method="post" action="{{ path('frontend.druckfreigabe.verify', {orderNumber: orderNumber}) }}">
-        {% if verifyError %}
-            <div class="alert alert-danger mb-3">{{ verifyError }}</div>
-        {% endif %}
-        <div class="mb-3">
-            <label class="form-label fw-bold">Bestellnummer:</label>
-            <input type="text" class="form-control" value="{{ orderNumber }}" readonly>
-        </div>
-        <div class="mb-3">
-            <label class="form-label fw-bold">Postleitzahl der Lieferanschrift:</label>
-            <input type="text" class="form-control" name="plz" required autofocus>
-        </div>
-        <button type="submit" class="btn btn-primary">BILDER ANZEIGEN</button>
-    </form>
+    {% if showLanding is defined and showLanding %}
+        {# Landing: Bestellnummer + PLZ beide editierbar #}
+        <form method="post" action="{{ path('frontend.druckfreigabe.landing') }}">
+            {% if verifyError %}
+                <div class="alert alert-danger mb-3">{{ verifyError }}</div>
+            {% endif %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Bestellnummer:</label>
+                <input type="text" class="form-control" name="orderNumber" value="{{ orderNumber }}" required autofocus>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Postleitzahl der Lieferanschrift:</label>
+                <input type="text" class="form-control" name="plz" required>
+            </div>
+            <button type="submit" class="btn btn-primary">BILDER ANZEIGEN</button>
+        </form>
+    {% else %}
+        {# Direktlink /druckfreigabe/{orderNumber}: nur PLZ eingeben #}
+        <form method="post" action="{{ path('frontend.druckfreigabe.verify', {orderNumber: orderNumber}) }}">
+            {% if verifyError %}
+                <div class="alert alert-danger mb-3">{{ verifyError }}</div>
+            {% endif %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Bestellnummer:</label>
+                <input type="text" class="form-control" value="{{ orderNumber }}" readonly>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Postleitzahl der Lieferanschrift:</label>
+                <input type="text" class="form-control" name="plz" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary">BILDER ANZEIGEN</button>
+        </form>
+    {% endif %}
 </div>
 {% else %}
 

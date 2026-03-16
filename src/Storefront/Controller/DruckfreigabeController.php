@@ -12,6 +12,52 @@ use Symfony\Component\HttpFoundation\Response;
 class DruckfreigabeController extends StorefrontController
 {
     #[Route(
+        path: '/druckfreigabe',
+        name: 'frontend.druckfreigabe.landing',
+        defaults: ['_csrf_protection' => false],
+        methods: ['GET', 'POST']
+    )]
+    public function landing(Request $request): Response
+    {
+        $error = null;
+
+        if ($request->isMethod('POST')) {
+            $orderNumber = trim($request->request->get('orderNumber', ''));
+            $plz         = trim($request->request->get('plz', ''));
+
+            if ($orderNumber === '' || $plz === '') {
+                $error = 'Bitte Bestellnummer und Postleitzahl eingeben.';
+            } else {
+                $xmlPath = $_SERVER['DOCUMENT_ROOT'] . '/media/som/' . $orderNumber . '_XML.xml';
+
+                if (!file_exists($xmlPath)) {
+                    $error = 'Bestellung nicht gefunden.';
+                } else {
+                    $xml    = simplexml_load_file($xmlPath);
+                    $xmlPlz = trim((string) $xml->shipping_to->order_shipping_zipcode);
+
+                    if ($plz !== $xmlPlz) {
+                        $error = 'Die eingegebene Postleitzahl stimmt nicht überein.';
+                    } else {
+                        $request->getSession()->set('druckfreigabe_verified_' . $orderNumber, true);
+                        return $this->redirectToRoute('frontend.druckfreigabe.page', ['orderNumber' => $orderNumber]);
+                    }
+                }
+            }
+        }
+
+        return $this->renderStorefront(
+            '@Storefront/storefront/page/druckfreigabe/index.html.twig',
+            [
+                'orderNumber'    => $request->request->get('orderNumber', ''),
+                'showVerifyForm' => true,
+                'showLanding'    => true,
+                'verifyError'    => $error,
+            ]
+        );
+    }
+
+    #[Route(
         path: '/druckfreigabe/{orderNumber}',
         name: 'frontend.druckfreigabe.page',
         defaults: ['_csrf_protection' => false],
