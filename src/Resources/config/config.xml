@@ -7,11 +7,11 @@
         <title lang="en-GB">Noriliving Druckfreigabe</title>
 
         <input-field>
-            <name>erlebnisweltId</name>
-            <label>Erlebniswelt ID (nach Freigabe)</label>
-            <label lang="en-GB">Erlebniswelt ID (after approval)</label>
-            <helpText>UUID der Erlebniswelt die nach Druckfreigabe angezeigt wird (aus der Admin-URL).</helpText>
-            <helpText lang="en-GB">UUID of the CMS page shown after print approval (from admin URL).</helpText>
+            <name>erlebnisweltName</name>
+            <label>Erlebniswelt Name oder UUID (nach Freigabe)</label>
+            <label lang="en-GB">Erlebniswelt Name or UUID (after approval)</label>
+            <helpText>Name der Erlebniswelt (z.B. "df-erlebniswelt") oder die UUID aus der Admin-URL. Wird nach erfolgreicher Druckfreigabe angezeigt.</helpText>
+            <helpText lang="en-GB">Name of the CMS page (e.g. "df-erlebniswelt") or the UUID from the admin URL.</helpText>
             <defaultValue></defaultValue>
         </input-field>
 

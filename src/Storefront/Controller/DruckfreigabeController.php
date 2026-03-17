@@ -2,6 +2,10 @@
 
 namespace NorilivingDruckfreigabe\Storefront\Controller;
 
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\PlatformRequest;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Controller\StorefrontController;
@@ -16,7 +20,8 @@ class DruckfreigabeController extends StorefrontController
     private const PLZ_LOCKOUT_SECS = 900; // 15 Minuten
 
     public function __construct(
-        private readonly SystemConfigService $systemConfig
+        private readonly SystemConfigService $systemConfig,
+        private readonly EntityRepository $cmsPageRepository
     ) {}
 
     // ── PLZ-Eingabe Landingpage ──────────────────────────────────────────────
@@ -239,6 +244,13 @@ class DruckfreigabeController extends StorefrontController
         $dom->loadXML($xml->asXML());
         $dom->save($outputDir . '/druckfreigabe-' . $orderNumber . '.xml');
 
+        $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
+        $swContext = $context ? $context->getContext() : Context::createDefaultContext();
+        $erlebnisweltId = $this->resolveErlebnisweltId(
+            (string) $this->systemConfig->get('NorilivingDruckfreigabe.config.erlebnisweltName'),
+            $swContext
+        );
+
         $response = $this->renderStorefront(
             '@NorilivingDruckfreigabe/storefront/page/druckfreigabe/index.html.twig',
             array_merge($data, [
@@ -246,8 +258,9 @@ class DruckfreigabeController extends StorefrontController
                 'showVerifyForm' => false,
                 'success'        => true,
                 'approvalValue'  => $druckfreigabeValue,
+                'comment'        => $comment,
                 'error'          => null,
-                'erlebnisweltId' => $this->systemConfig->get('NorilivingDruckfreigabe.config.erlebnisweltId'),
+                'erlebnisweltId' => $erlebnisweltId,
             ])
         );
 
@@ -320,6 +333,29 @@ class DruckfreigabeController extends StorefrontController
         }
 
         return false;
+    }
+
+    /**
+     * Gibt die UUID der CMS-Seite zurück.
+     * Akzeptiert sowohl UUID (32 Hex-Zeichen) als auch Erlebniswelt-Name.
+     */
+    private function resolveErlebnisweltId(string $nameOrId, Context $context): string
+    {
+        if ($nameOrId === '') {
+            return '';
+        }
+
+        // Sieht wie eine UUID aus → direkt verwenden
+        if (preg_match('/^[0-9a-f]{32}$/i', str_replace('-', '', $nameOrId))) {
+            return $nameOrId;
+        }
+
+        // Sonst per Name suchen
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('name', $nameOrId));
+        $result = $this->cmsPageRepository->search($criteria, $context)->first();
+
+        return $result ? $result->getId() : '';
     }
 
     private function setNoCacheHeaders(Response $response): void
