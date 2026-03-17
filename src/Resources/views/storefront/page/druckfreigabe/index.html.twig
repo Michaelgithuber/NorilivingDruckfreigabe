@@ -52,16 +52,16 @@
 .df-order-box-item .value { font-weight: 600; color: #1a1a1a; font-size: 14px; }
 
 /* ── Success Box ─────────────────────────────────── */
-.df-success-box   { text-align: center; padding: 40px 32px; border-radius: 12px; margin-bottom: 32px; }
+.df-success-box   { text-align: center; padding: 24px 32px; border-radius: 12px; margin-bottom: 32px; }
 .df-success-ja    { background: #fff; border: 2px solid #27ae60; }
 .df-success-nein  { background: #fff; border: 2px solid #222; }
-.df-success-icon  { font-size: 52px; margin-bottom: 12px; }
-.df-success-title { font-size: 26px; font-weight: bold; margin-bottom: 12px; }
+.df-success-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
 .df-success-title.ja   { color: #27ae60; }
 .df-success-title.nein { color: #222; }
-.df-success-info  { margin-bottom: 16px; color: #444; }
-.df-success-list  { list-style: none; padding: 0; margin: 0 0 20px; display: inline-block; text-align: left; }
-.df-success-list li { padding: 4px 0; font-size: 15px; }
+.df-success-info  { margin-bottom: 12px; color: #444; }
+.df-success-list  { list-style: none; padding: 0; margin: 0 0 12px; display: inline-block; text-align: left; }
+.df-success-list li { padding: 3px 0; font-size: 15px; }
+.df-success-comment { font-style: italic; color: #555; margin-top: 8px; }
 
 /* ── Erlebniswelt ────────────────────────────────── */
 .df-erlebniswelt  { margin-bottom: 40px; }
@@ -132,9 +132,8 @@
     {# ── Bestätigungs-Box nach Absenden ── #}
     {% if success %}
         <div class="df-success-box {{ approvalValue == 'erteilt' ? 'df-success-ja' : 'df-success-nein' }}">
-            <div class="df-success-icon">{{ approvalValue == 'erteilt' ? '✅' : '❌' }}</div>
             <div class="df-success-title {{ approvalValue == 'erteilt' ? 'ja' : 'nein' }}">
-                Druckfreigabe {{ approvalValue == 'erteilt' ? 'erteilt' : 'abgelehnt' }}!
+                {{ approvalValue == 'erteilt' ? '✅' : '❌' }} Druckfreigabe {{ approvalValue == 'erteilt' ? 'erteilt' : 'abgelehnt' }}!
             </div>
             <p class="df-success-info">Bestellung: <strong>{{ orderInfo.number }}</strong> &nbsp;|&nbsp; {{ orderInfo.name }}</p>
             {% if approvalValue == 'erteilt' %}
@@ -143,14 +142,12 @@
                     <li>🚚 Der Versand erfolgt in ca. <strong>1 Woche</strong> (früher bei bestellter Express-Option)</li>
                     <li>📧 Sie erhalten eine <strong>Versandbestätigung per Mail</strong></li>
                 </ul>
-                <a href="{{ path('frontend.account.order.page') }}" class="btn btn-outline-secondary btn-sm">← Zurück zu meinen Bestellungen</a>
             {% else %}
-                <a href="{{ path('frontend.account.order.page') }}" class="btn btn-outline-secondary btn-sm mb-3">← Zurück zu meinen Bestellungen</a>
-                <ul class="df-success-list mt-3">
+                <ul class="df-success-list">
                     <li>📧 Sie erhalten eine <strong>neue Druckvorschau per Mail</strong></li>
                 </ul>
                 {% if comment is defined and comment %}
-                    <p class="mt-2" style="font-style:italic; color:#555;">"{{ comment }}"</p>
+                    <p class="df-success-comment"><strong>Ihr Kommentar:</strong> „{{ comment }}"</p>
                 {% endif %}
             {% endif %}
         </div>
