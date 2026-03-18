@@ -179,7 +179,8 @@
     {# Positionen #}
     <div class="df-positions-grid">
     {% for position in positions %}
-    <div class="df-position" style="flex: 0 1 {{ (position.total_breite * 0.17 + 152)|round }}px; max-width: 100%;">
+    {% set pos_width = (position.total_breite * 0.17 + 152)|round %}
+    <div class="df-position" style="flex: 0 1 {{ pos_width }}px; width: {{ pos_width }}px; max-width: 100%;">
 
         {# Info links #}
         <div class="df-pos-info">
